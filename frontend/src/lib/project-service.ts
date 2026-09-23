@@ -3,6 +3,7 @@ import { apiClient } from './api-client';
 
 export const DEFAULT_STAGES: WorkflowStageType[] = [
   'source-grounding',
+  'content-type',
   'content-selection',
   'platform-strategy',
   'topic-angle',

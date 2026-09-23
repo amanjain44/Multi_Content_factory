@@ -11,9 +11,29 @@ class DemoProvider(BaseAIProvider):
         is_js = "javascript" in prompt.lower() or "mozilla" in prompt.lower()
         is_youtube = "youtube" in prompt.lower()
         is_twitter = "twitter" in prompt.lower()
+        is_twitter = "twitter" in prompt.lower()
         
+        # Check if an approved type was injected into the prompt
+        approved_type = "Carousel" # default
+        if "Target Content Type: Video" in prompt:
+            approved_type = "Video"
+        elif "Target Content Type: Article" in prompt:
+            approved_type = "Article"
+        elif "Target Content Type: Carousel" in prompt:
+            approved_type = "Carousel"
+        elif "Target Content Type: Social Post" in prompt:
+            approved_type = "Social Post"
+            
         platform_name = "YouTube" if is_youtube else ("Twitter" if is_twitter else "LinkedIn")
         platform_format = "Video" if is_youtube else ("Thread" if is_twitter else "Carousel")
+        
+        # Override format if specifically requested
+        if approved_type == "Carousel":
+            platform_format = "Carousel"
+        elif approved_type == "Video":
+            platform_format = "Video"
+        elif approved_type == "Article":
+            platform_format = "Article"
 
         if is_js:
             if schema.__name__ == "ContentSelectionOutput":
@@ -115,44 +135,95 @@ class DemoProvider(BaseAIProvider):
                 "suggested_angles": ["The Workflow Shift", "From Typist to Architect"]
             }
             return schema(**mock_data)
+
+        if schema.__name__ == "ContentTypeOutput":
+            return schema(**{
+                "recommendation": {
+                    "recommendedType": "Carousel",
+                    "alternatives": ["Article", "Social Post"],
+                    "reasoning": "The source material contains several educational concepts that can be broken into concise visual sections.",
+                    "sourceSignals": ["multiple distinct concepts", "educational structure", "step-by-step workflow"]
+                }
+            })
             
         if schema.__name__ == "ContentSelectionOutput":
-            mock_data = {
-                "opportunities": [
-                    {
-                        "id": "opt-linkedin-carousel",
-                        "title": "LinkedIn Carousel: The Developer's New Workflow",
-                        "summary": "A multi-slide visual carousel detailing how AI coding assistants are changing the daily workflow of software engineers, moving them from writing boilerplate to reviewing architecture.",
-                        "whyInteresting": "Carousels perform exceptionally well on LinkedIn for educational content. The step-by-step format allows developers to easily digest the workflow shift.",
-                        "keyPoints": [
-                            "AI coding tools help reduce repetitive boilerplate tasks",
-                            "The shift from 'writing code' to 'reviewing AI-generated code'",
-                            "Practical examples: generating test suites and documentation",
-                            "The growing importance of prompt engineering and architectural thinking"
-                        ],
-                        "potentialAudience": "Software engineers, tech leads, and startup founders who use or evaluate developer tools",
-                        "estimatedValue": "High reach — strong educational value leading to shares and saves"
-                    },
-                    {
-                        "id": "opt-youtube-video",
-                        "title": "YouTube Video: From Typist to Architect",
-                        "summary": "An in-depth video essay exploring the evolution of software engineering in the age of AI.",
-                        "whyInteresting": "YouTube allows for deeper dives and screen recordings to demonstrate the actual workflow shift in real-time.",
-                        "keyPoints": ["Visual demonstration of AI assistants", "Code review vs writing code"],
-                        "potentialAudience": "Developers looking for tutorials",
-                        "estimatedValue": "High retention and long-tail discoverability"
-                    },
-                    {
-                        "id": "opt-twitter-thread",
-                        "title": "Twitter Thread: Top 5 Prompting Tips",
-                        "summary": "A concise thread sharing actionable tips for better AI prompting.",
-                        "whyInteresting": "Twitter is great for quick, actionable advice that developers can try immediately.",
-                        "keyPoints": ["Be specific", "Provide context", "Iterate"],
-                        "potentialAudience": "Tech community and indie hackers",
-                        "estimatedValue": "High engagement and virality potential"
-                    }
-                ]
-            }
+            if approved_type == "Article":
+                mock_data = {
+                    "opportunities": [
+                        {
+                            "id": "opt-article-1",
+                            "title": "In-Depth Article: The Developer's New Workflow",
+                            "summary": "A comprehensive written article detailing how AI coding assistants are changing the daily workflow of software engineers.",
+                            "whyInteresting": "Articles perform exceptionally well for deep, technical educational content.",
+                            "keyPoints": [
+                                "AI coding tools help reduce repetitive boilerplate tasks",
+                                "The shift from 'writing code' to 'reviewing AI-generated code'"
+                            ],
+                            "potentialAudience": "Software engineers, tech leads",
+                            "estimatedValue": "High SEO value and long-tail discoverability"
+                        },
+                        {
+                            "id": "opt-article-2",
+                            "title": "Opinion Piece: From Typist to Architect",
+                            "summary": "A thought leadership article exploring the evolution of software engineering in the age of AI.",
+                            "whyInteresting": "Opinion pieces spark discussion and position the author as an industry leader.",
+                            "keyPoints": ["The changing role of the developer", "Why prompt engineering is crucial"],
+                            "potentialAudience": "Tech community and engineering managers",
+                            "estimatedValue": "High engagement and shares"
+                        }
+                    ]
+                }
+            elif approved_type == "Social Post":
+                mock_data = {
+                    "opportunities": [
+                        {
+                            "id": "opt-social-1",
+                            "title": "Short Social Post: Top 3 AI Coding Tips",
+                            "summary": "A quick, punchy social post sharing immediate actionable advice for developers using AI tools.",
+                            "whyInteresting": "Bite-sized content drives immediate engagement and is highly shareable.",
+                            "keyPoints": ["Be specific", "Provide context", "Iterate quickly"],
+                            "potentialAudience": "Developers scrolling on social media",
+                            "estimatedValue": "High virality potential"
+                        }
+                    ]
+                }
+            else:
+                mock_data = {
+                    "opportunities": [
+                        {
+                            "id": "opt-linkedin-carousel",
+                            "title": "LinkedIn Carousel: The Developer's New Workflow",
+                            "summary": "A multi-slide visual carousel detailing how AI coding assistants are changing the daily workflow of software engineers, moving them from writing boilerplate to reviewing architecture.",
+                            "whyInteresting": "Carousels perform exceptionally well on LinkedIn for educational content. The step-by-step format allows developers to easily digest the workflow shift.",
+                            "keyPoints": [
+                                "AI coding tools help reduce repetitive boilerplate tasks",
+                                "The shift from 'writing code' to 'reviewing AI-generated code'",
+                                "Practical examples: generating test suites and documentation",
+                                "The growing importance of prompt engineering and architectural thinking"
+                            ],
+                            "potentialAudience": "Software engineers, tech leads, and startup founders who use or evaluate developer tools",
+                            "estimatedValue": "High reach — strong educational value leading to shares and saves"
+                        },
+                        {
+                            "id": "opt-youtube-video",
+                            "title": "YouTube Video: From Typist to Architect",
+                            "summary": "An in-depth video essay exploring the evolution of software engineering in the age of AI.",
+                            "whyInteresting": "YouTube allows for deeper dives and screen recordings to demonstrate the actual workflow shift in real-time.",
+                            "keyPoints": ["Visual demonstration of AI assistants", "Code review vs writing code"],
+                            "potentialAudience": "Developers looking for tutorials",
+                            "estimatedValue": "High retention and long-tail discoverability"
+                        },
+                        {
+                            "id": "opt-twitter-thread",
+                            "title": "Twitter Thread: Top 5 Prompting Tips",
+                            "summary": "A concise thread sharing actionable tips for better AI prompting.",
+                            "whyInteresting": "Twitter is great for quick, actionable advice that developers can try immediately.",
+                            "keyPoints": ["Be specific", "Provide context", "Iterate"],
+                            "potentialAudience": "Tech community and indie hackers",
+                            "estimatedValue": "High engagement and virality potential"
+                        }
+                    ]
+                }
             return schema(**mock_data)
             
         if schema.__name__ == "PlatformStrategyOutput":

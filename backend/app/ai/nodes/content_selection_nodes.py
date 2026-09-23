@@ -53,6 +53,9 @@ async def generate_recommendations(state: AIState) -> Dict[str, Any]:
     
     context_str = f"Extra Grounding Context (use if relevant):\n{grounding_text}\n\n" if grounding_text else ""
     
+    approved_type = state.get("approved_content_type")
+    type_str = f"Target Content Type: {approved_type}\nNOTE: ALL opportunities MUST be formats or styles suitable for a {approved_type}.\n" if approved_type else ""
+    
     prompt = f"""
     Based on the following source material and its analysis, recommend 3-5 distinct content formats or angles (Content Opportunities) that would be highly valuable for the target audience.
     
@@ -62,6 +65,9 @@ async def generate_recommendations(state: AIState) -> Dict[str, Any]:
     {context_str}
     Analysis Context:
     {analysis}
+    
+    {type_str}
+
     
     For each opportunity, provide:
     - A unique ID (e.g. alphanumeric string like 'opt-1')

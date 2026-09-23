@@ -58,6 +58,9 @@ async def generate_platforms(state: AIState) -> Dict[str, Any]:
     grounding_text = grounding_context.get("text", "")
     context_str = f"Extra Grounding Context (use if relevant):\n{grounding_text}\n\n" if grounding_text else ""
     
+    approved_type = state.get("approved_content_type")
+    type_str = f"Target Content Type: {approved_type}\nNOTE: The recommended format for EACH platform MUST be compatible with '{approved_type}'. Do NOT recommend a different overarching format.\n" if approved_type else ""
+    
     prompt = f"""
     Based on the following source material, the selected content opportunity, and the analysis, recommend 2-4 platforms that would be highly suitable for publishing this content.
     
@@ -71,6 +74,8 @@ async def generate_platforms(state: AIState) -> Dict[str, Any]:
     {context_str}
     Analysis Context:
     {analysis}
+    
+    {type_str}
     
     For each platform recommendation, provide:
     - A unique ID (alphanumeric string like 'plat-1')

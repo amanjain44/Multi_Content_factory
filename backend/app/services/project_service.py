@@ -21,6 +21,7 @@ class ProjectService:
         stage_repo = WorkflowStageRepository(self.repo.session)
         DEFAULT_STAGES = [
             'source-grounding',
+            'content-type',
             'content-selection',
             'platform-strategy',
             'topic-angle',

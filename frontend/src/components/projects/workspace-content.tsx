@@ -3,6 +3,7 @@
 import React from 'react';
 import { WorkflowStage, Project } from '@/types/project';
 import { Bot, Edit3, FileText, ArrowRight } from 'lucide-react';
+import { ContentTypeStage } from './stages/content-type-stage';
 import { ContentSelectionStage } from './stages/content-selection-stage';
 import { PlatformStrategyStage } from './stages/platform-strategy-stage';
 import { TopicAngleStage } from './stages/topic-angle-stage';
@@ -23,6 +24,14 @@ export function WorkspaceContent({ project, activeStage, onAdvanceStage }: Works
 
   const renderStageContent = () => {
     switch (activeStage.type) {
+      case 'content-type':
+        return (
+          <ContentTypeStage 
+            project={project} 
+            activeStage={activeStage} 
+            onComplete={onAdvanceStage} 
+          />
+        );
       case 'content-selection':
         return (
           <ContentSelectionStage 
@@ -85,20 +94,7 @@ export function WorkspaceContent({ project, activeStage, onAdvanceStage }: Works
             </div>
           </div>
         );
-      case 'final-script':
-        return (
-          <div className="space-y-6 flex items-center justify-center h-full min-h-[40vh]">
-            <div className="text-center space-y-4 max-w-md">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 text-primary">
-                <Edit3 className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-bold text-foreground">Script Generation</h3>
-              <p className="text-muted-foreground text-sm">
-                The AI will generate the final multi-platform scripts, formatting it perfectly for LinkedIn, Twitter, or Newsletter standards.
-              </p>
-            </div>
-          </div>
-        );
+
       default:
         return (
           <div className="flex items-center justify-center h-full min-h-[40vh] border-2 border-dashed border-border/50 rounded-3xl p-12 text-center bg-background/30">
@@ -137,7 +133,7 @@ export function WorkspaceContent({ project, activeStage, onAdvanceStage }: Works
             {activeStage.status}
           </div>
           
-          {activeStage.status !== 'Completed' && (
+          {activeStage.status !== 'Completed' && !['content-type', 'content-selection', 'platform-strategy', 'topic-angle', 'content-strategy', 'storyboard', 'final-script'].includes(activeStage.type) && (
             <button 
               onClick={onAdvanceStage}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-foreground text-background text-sm font-semibold hover:scale-[1.02] active:scale-95 transition-all shadow-md"

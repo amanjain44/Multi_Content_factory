@@ -67,6 +67,9 @@ async def generate_angles(state: AIState) -> Dict[str, Any]:
     grounding_text = grounding_context.get("text", "")
     context_str = f"Extra Grounding Context (use if relevant):\n{grounding_text}\n\n" if grounding_text else ""
     
+    approved_type = state.get("approved_content_type")
+    type_str = f"Target Content Type: {approved_type}\nNOTE: The angles MUST be appropriate for a {approved_type}.\n" if approved_type else ""
+
     prompt = f"""
     Based on the following context, generate 3-4 distinct topic angles (e.g., Contrarian, Educational, Blueprint, Story-driven) for the content.
     
@@ -74,6 +77,7 @@ async def generate_angles(state: AIState) -> Dict[str, Any]:
     {input_text}
     
     {context_str}
+    {type_str}
     Selected Content Opportunity:
     Title: {selected_opportunity.get('title')}
     Summary: {selected_opportunity.get('summary')}

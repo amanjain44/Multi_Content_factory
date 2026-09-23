@@ -4,6 +4,7 @@ export type StageStatus = 'Locked' | 'Not Started' | 'In Progress' | 'Completed'
 
 export type WorkflowStageType = 
   | 'source-grounding'
+  | 'content-type'
   | 'content-selection'
   | 'platform-strategy'
   | 'topic-angle'

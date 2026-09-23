@@ -40,6 +40,19 @@ async def test_content_selection_demo_mode(authenticated_client: AsyncClient):
     """
     project_id = await create_test_project(authenticated_client, "CS Demo Test")
 
+    # Step 1.5: Setup content type stage
+    await authenticated_client.put(
+        f"/api/projects/{project_id}/stages/content-type",
+        json={
+            "stage_type": "content-type",
+            "status": "Completed",
+            "data": {
+                "recommendation": {"recommendedType": "Carousel"},
+                "approved_type": "Carousel"
+            }
+        }
+    )
+
     with patch("app.core.config.settings.AI_PROVIDER", "demo"):
         response = await authenticated_client.post(
             "/api/ai/content-selection",
@@ -108,6 +121,19 @@ async def test_content_selection_ai_failure_returns_500(authenticated_client: As
     """
     project_id = await create_test_project(authenticated_client, "CS Failure Test")
 
+    # Step 1.5: Setup content type stage
+    await authenticated_client.put(
+        f"/api/projects/{project_id}/stages/content-type",
+        json={
+            "stage_type": "content-type",
+            "status": "Completed",
+            "data": {
+                "recommendation": {"recommendedType": "Carousel"},
+                "approved_type": "Carousel"
+            }
+        }
+    )
+
     with patch(
         "app.api.routes.ai.orchestrator.run_content_selection",
         new_callable=AsyncMock,
@@ -146,6 +172,19 @@ async def test_content_selection_openai_provider_routing(authenticated_client: A
         ]
     }
 
+    # Step 1.5: Setup content type stage
+    await authenticated_client.put(
+        f"/api/projects/{project_id}/stages/content-type",
+        json={
+            "stage_type": "content-type",
+            "status": "Completed",
+            "data": {
+                "recommendation": {"recommendedType": "Carousel"},
+                "approved_type": "Carousel"
+            }
+        }
+    )
+
     with patch("app.core.config.settings.AI_PROVIDER", "openai"), patch(
         "app.api.routes.ai.orchestrator.run_content_selection",
         new_callable=AsyncMock,
@@ -171,6 +210,19 @@ async def test_content_selection_result_persists_via_stage(authenticated_client:
     the data should be retrievable from PostgreSQL.
     """
     project_id = await create_test_project(authenticated_client, "CS Persistence Test")
+
+    # Step 0.5: Setup content type stage
+    await authenticated_client.put(
+        f"/api/projects/{project_id}/stages/content-type",
+        json={
+            "stage_type": "content-type",
+            "status": "Completed",
+            "data": {
+                "recommendation": {"recommendedType": "Carousel"},
+                "approved_type": "Carousel"
+            }
+        }
+    )
 
     # Step 1: Generate content selection
     with patch("app.core.config.settings.AI_PROVIDER", "demo"):
@@ -274,6 +326,18 @@ SAMPLE_STRATEGY = {
 
 async def _setup_prerequisite_stages(authenticated_client: AsyncClient, project_id: str):
     """Helper: persist all prerequisite stages so storyboard endpoint can load them."""
+    # content-type
+    await authenticated_client.put(
+        f"/api/projects/{project_id}/stages/content-type",
+        json={
+            "stage_type": "content-type",
+            "status": "Completed",
+            "data": {
+                "recommendation": {"recommendedType": "Carousel"},
+                "approved_type": "Carousel"
+            }
+        }
+    )
     # content-selection
     await authenticated_client.put(
         f"/api/projects/{project_id}/stages/content-selection",
@@ -405,6 +469,7 @@ async def test_storyboard_missing_prerequisite_content_selection(authenticated_c
         or "prerequisite" in detail
         or "content selection" in detail
         or "empty" in detail
+        or "content type" in detail
     ), f"Unexpected 400 detail: {detail}"
 
 

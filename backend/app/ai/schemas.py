@@ -1,5 +1,16 @@
-from typing import List, Optional, TypedDict
+from typing import List, Optional, TypedDict, Literal
 from pydantic import BaseModel, Field
+
+ContentTypeEnum = Literal["Video", "Image", "Carousel", "Article", "Newsletter", "Social Post"]
+
+class ContentTypeRecommendation(BaseModel):
+    recommendedType: ContentTypeEnum = Field(description="The primary recommended content type")
+    alternatives: List[ContentTypeEnum] = Field(description="Alternative content types")
+    reasoning: str = Field(description="Why this format was recommended")
+    sourceSignals: List[str] = Field(description="Signals from the source text")
+
+class ContentTypeOutput(BaseModel):
+    recommendation: ContentTypeRecommendation
 
 class ContentPlanOutput(BaseModel):
     summary: str = Field(description="A brief summary of the content plan")
@@ -125,6 +136,7 @@ class ScriptOutput(BaseModel):
 
 class AIState(TypedDict):
     input_text: str
+    approved_content_type: Optional[str]
     selected_opportunity: Optional[dict]
     selected_platforms: Optional[List[dict]]
     selected_angle: Optional[dict]
