@@ -9,6 +9,11 @@ class DemoProvider(BaseAIProvider):
 
     async def generate_structured(self, prompt: str, schema: Type[BaseModel]) -> Any:
         is_js = "javascript" in prompt.lower() or "mozilla" in prompt.lower()
+        is_youtube = "youtube" in prompt.lower()
+        is_twitter = "twitter" in prompt.lower()
+        
+        platform_name = "YouTube" if is_youtube else ("Twitter" if is_twitter else "LinkedIn")
+        platform_format = "Video" if is_youtube else ("Thread" if is_twitter else "Carousel")
 
         if is_js:
             if schema.__name__ == "ContentSelectionOutput":
@@ -21,6 +26,14 @@ class DemoProvider(BaseAIProvider):
                         "keyPoints": ["JS is single threaded", "Event loop"],
                         "potentialAudience": "Developers",
                         "estimatedValue": "High"
+                    }, {
+                        "id": "opt-js-yt",
+                        "title": "JavaScript Fundamentals YouTube Short",
+                        "summary": "Quick visual overview of JS concepts",
+                        "whyInteresting": "Visual learners engage well on YouTube Shorts.",
+                        "keyPoints": ["Event loop animation"],
+                        "potentialAudience": "Beginner Developers",
+                        "estimatedValue": "High reach"
                     }]
                 })
             elif schema.__name__ == "PlatformStrategyOutput":
@@ -30,15 +43,25 @@ class DemoProvider(BaseAIProvider):
                         "suitability": 90, "reasoning": "Good reach",
                         "recommendedFormat": "Post", "recommendedLength": "Short",
                         "audience": "Devs", "tone": "Educational", "priority": "High"
+                    }, {
+                        "id": "plat-js-yt", "projectId": "demo", "platform": "YouTube",
+                        "suitability": 85, "reasoning": "Great for visual tutorials",
+                        "recommendedFormat": "Shorts", "recommendedLength": "60 seconds",
+                        "audience": "Beginners", "tone": "Engaging", "priority": "Medium"
+                    }, {
+                        "id": "plat-js-tw", "projectId": "demo", "platform": "Twitter",
+                        "suitability": 80, "reasoning": "Good for quick tips",
+                        "recommendedFormat": "Thread", "recommendedLength": "5 tweets",
+                        "audience": "Tech Community", "tone": "Informative", "priority": "Medium"
                     }]
                 })
             elif schema.__name__ == "TopicAngleOutput":
                 return schema(**{
                     "angles": [{
-                        "id": "ang-js", "projectId": "demo", "title": "JS Basics",
+                        "id": "ang-js", "projectId": "demo", "title": f"JS Basics ({platform_name})",
                         "angle": "Educational", "hook": "Learn JS", "description": "JS is cool",
                         "targetAudience": "Devs", "corePromise": "Master JS", "differentiation": "Simple",
-                        "supportingPoints": ["Event Loop"], "recommendedPlatforms": ["LinkedIn"]
+                        "supportingPoints": ["Event Loop"], "recommendedPlatforms": [platform_name]
                     }]
                 })
             elif schema.__name__ == "ContentStrategyOutput":
@@ -47,15 +70,19 @@ class DemoProvider(BaseAIProvider):
                         "id": "strat-js", "projectId": "demo", "objective": "Teach JS",
                         "targetAudience": "Devs", "coreMessage": "JS is essential",
                         "valueProposition": "Clear concepts", "tone": "Educational",
-                        "format": "Post", "hookStrategy": "Question",
+                        "format": platform_format, "hookStrategy": "Question",
                         "keyTalkingPoints": ["Event loop"], "callToAction": "Follow",
-                        "contentStructure": "Intro, Body, Outro", "platformAdaptations": []
+                        "contentStructure": "Intro, Body, Outro", "platformAdaptations": [{
+                            "platform": platform_name,
+                            "format": platform_format,
+                            "notes": "Ensure high visual contrast."
+                        }]
                     }
                 })
             elif schema.__name__ == "StoryboardOutput":
                 return schema(**{
                     "storyboard": {
-                        "id": "sb-js", "projectId": "demo", "title": "JS Basics",
+                        "id": "sb-js", "projectId": "demo", "title": f"JS Basics ({platform_name} {platform_format})",
                         "objective": "Teach JS", "status": "Draft",
                         "scenes": [{
                             "id": "scene-1", "order": 1, "title": "Intro", "purpose": "Hook",
@@ -67,8 +94,8 @@ class DemoProvider(BaseAIProvider):
             elif schema.__name__ == "ScriptOutput":
                 return schema(**{
                     "script": {
-                        "id": "script-js", "projectId": "demo", "title": "JS Post",
-                        "platform": "LinkedIn", "format": "Post", "hook": "Learn JS",
+                        "id": "script-js", "projectId": "demo", "title": f"JS Post ({platform_name})",
+                        "platform": platform_name, "format": platform_format, "hook": "Learn JS",
                         "conclusion": "Master JS", "callToAction": "Follow",
                         "estimatedDuration": "N/A", "status": "Draft",
                         "sections": [{
@@ -105,6 +132,24 @@ class DemoProvider(BaseAIProvider):
                         ],
                         "potentialAudience": "Software engineers, tech leads, and startup founders who use or evaluate developer tools",
                         "estimatedValue": "High reach — strong educational value leading to shares and saves"
+                    },
+                    {
+                        "id": "opt-youtube-video",
+                        "title": "YouTube Video: From Typist to Architect",
+                        "summary": "An in-depth video essay exploring the evolution of software engineering in the age of AI.",
+                        "whyInteresting": "YouTube allows for deeper dives and screen recordings to demonstrate the actual workflow shift in real-time.",
+                        "keyPoints": ["Visual demonstration of AI assistants", "Code review vs writing code"],
+                        "potentialAudience": "Developers looking for tutorials",
+                        "estimatedValue": "High retention and long-tail discoverability"
+                    },
+                    {
+                        "id": "opt-twitter-thread",
+                        "title": "Twitter Thread: Top 5 Prompting Tips",
+                        "summary": "A concise thread sharing actionable tips for better AI prompting.",
+                        "whyInteresting": "Twitter is great for quick, actionable advice that developers can try immediately.",
+                        "keyPoints": ["Be specific", "Provide context", "Iterate"],
+                        "potentialAudience": "Tech community and indie hackers",
+                        "estimatedValue": "High engagement and virality potential"
                     }
                 ]
             }
@@ -124,6 +169,30 @@ class DemoProvider(BaseAIProvider):
                         "audience": "Software Engineers and Tech Leads",
                         "tone": "Professional, Educational, and Pragmatic",
                         "priority": "Recommended"
+                    },
+                    {
+                        "id": "plat-youtube-1",
+                        "projectId": "demo-project",
+                        "platform": "YouTube",
+                        "suitability": 90,
+                        "reasoning": "Allows for long-form video tutorials which are highly requested by developers.",
+                        "recommendedFormat": "Video",
+                        "recommendedLength": "10 minutes",
+                        "audience": "Developers of all levels",
+                        "tone": "Informative and engaging",
+                        "priority": "Recommended"
+                    },
+                    {
+                        "id": "plat-twitter-1",
+                        "projectId": "demo-project",
+                        "platform": "Twitter",
+                        "suitability": 85,
+                        "reasoning": "Excellent for quick thought leadership and engaging the tech community.",
+                        "recommendedFormat": "Thread",
+                        "recommendedLength": "5-7 tweets",
+                        "audience": "Tech Community",
+                        "tone": "Conversational and punchy",
+                        "priority": "Medium"
                     }
                 ]
             }
@@ -135,7 +204,7 @@ class DemoProvider(BaseAIProvider):
                     {
                         "id": "ang-workflow-shift",
                         "projectId": "demo-project",
-                        "title": "From Typist to Architect",
+                        "title": f"From Typist to Architect ({platform_name})",
                         "angle": "The Workflow Shift",
                         "hook": "AI isn't replacing developers; it's promoting them to architects.",
                         "description": "An educational breakdown of how daily development tasks change when using AI assistants.",
@@ -147,7 +216,7 @@ class DemoProvider(BaseAIProvider):
                             "Reviewing code is becoming more critical than writing it.",
                             "Prompt engineering is the new syntax."
                         ],
-                        "recommendedPlatforms": ["LinkedIn"]
+                        "recommendedPlatforms": [platform_name]
                     }
                 ]
             }
@@ -163,7 +232,7 @@ class DemoProvider(BaseAIProvider):
                     "coreMessage": "AI coding assistants elevate developers from typists to systems architects by reducing repetitive tasks.",
                     "valueProposition": "Clear, pragmatic insight into the evolving skillset required for modern development.",
                     "tone": "Professional, pragmatic, and educational",
-                    "format": "Carousel",
+                    "format": platform_format,
                     "hookStrategy": "Start with a relatable observation about time spent on boilerplate versus system design.",
                     "keyTalkingPoints": [
                         "Reduction of boilerplate coding",
@@ -174,8 +243,8 @@ class DemoProvider(BaseAIProvider):
                     "contentStructure": "Slide 1: Hook, Slide 2: The Old Way, Slide 3: The New Way, Slide 4: Key Skill 1, Slide 5: Key Skill 2, Slide 6: The Takeaway, Slide 7: CTA",
                     "platformAdaptations": [
                         {
-                            "platform": "LinkedIn",
-                            "format": "Carousel",
+                            "platform": platform_name,
+                            "format": platform_format,
                             "notes": "Ensure high visual contrast and brief, impactful text on each slide."
                         }
                     ]
@@ -188,14 +257,14 @@ class DemoProvider(BaseAIProvider):
                 "storyboard": {
                     "id": "sb-carousel-1",
                     "projectId": "demo-project",
-                    "title": "The AI Developer Workflow (LinkedIn Carousel)",
+                    "title": f"The AI Developer Workflow ({platform_name} {platform_format})",
                     "objective": "Guide developers through the mindset shift required to effectively leverage AI coding tools.",
                     "status": "Draft",
                     "scenes": [
                         {
                             "id": "slide-1",
                             "order": 1,
-                            "title": "Slide 1: Hook",
+                            "title": "Scene 1: Hook",
                             "purpose": "Grab attention with a bold statement about the changing role of developers.",
                             "narration": "AI isn't replacing software engineers. It's promoting them to architects.",
                             "visualDirection": "Bold title text centered on a dark background with a subtle gradient.",
@@ -206,7 +275,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "slide-2",
                             "order": 2,
-                            "title": "Slide 2: The Problem",
+                            "title": "Scene 2: The Problem",
                             "purpose": "Highlight the inefficiency of the traditional workflow.",
                             "narration": "Traditionally, we spent hours writing boilerplate, fixing typos, and searching for syntax.",
                             "visualDirection": "Split layout: an hourglass icon on the left, bullet points on the right.",
@@ -217,7 +286,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "slide-3",
                             "order": 3,
-                            "title": "Slide 3: The Shift",
+                            "title": "Scene 3: The Shift",
                             "purpose": "Introduce how AI changes the distribution of effort.",
                             "narration": "With AI assistants, the execution is automated. The value is now in the direction.",
                             "visualDirection": "A flowchart showing 'Idea -> AI Execution -> Developer Review'.",
@@ -228,9 +297,9 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "slide-4",
                             "order": 4,
-                            "title": "Slide 4: Skill 1 - Prompting",
+                            "title": "Scene 4: Skill 1 - Prompting",
                             "purpose": "Define the first key skill in the new stack.",
-                            "narration": "Skill #1: Contextual Prompting. You need to explain the 'why' and 'how' clearly to the AI.",
+                            "narration": "Skill 1: Contextual Prompting. You need to explain the 'why' and 'how' clearly to the AI.",
                             "visualDirection": "A graphic of a chat interface showing a well-structured prompt.",
                             "onScreenText": "Skill 1: Contextual Prompting\nClear instructions yield clean code.",
                             "transition": "Swipe",
@@ -239,9 +308,9 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "slide-5",
                             "order": 5,
-                            "title": "Slide 5: Skill 2 - Code Review",
+                            "title": "Scene 5: Skill 2 - Code Review",
                             "purpose": "Define the second key skill in the new stack.",
-                            "narration": "Skill #2: High-Speed Code Review. You must be able to spot edge cases and security flaws in AI-generated code.",
+                            "narration": "Skill 2: High-Speed Code Review. You must be able to spot edge cases and security flaws in AI-generated code.",
                             "visualDirection": "A magnifying glass over a block of code with highlighted syntax.",
                             "onScreenText": "Skill 2: Advanced Code Review\nTrust, but rigorously verify.",
                             "transition": "Swipe",
@@ -250,7 +319,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "slide-6",
                             "order": 6,
-                            "title": "Slide 6: The Takeaway",
+                            "title": "Scene 6: The Takeaway",
                             "purpose": "Summarize the core message.",
                             "narration": "The best developers of tomorrow will think in systems, not just lines of code.",
                             "visualDirection": "A structural blueprint graphic transitioning into a modern tech stack logo.",
@@ -261,7 +330,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "slide-7",
                             "order": 7,
-                            "title": "Slide 7: Call to Action",
+                            "title": "Scene 7: Call to Action",
                             "purpose": "Encourage engagement and follows.",
                             "narration": "How has AI changed your daily workflow? Let me know in the comments.",
                             "visualDirection": "Profile picture, name, and a prominent 'Follow' button.",
@@ -279,9 +348,9 @@ class DemoProvider(BaseAIProvider):
                 "script": {
                     "id": "script-carousel-1",
                     "projectId": "demo-project",
-                    "title": "LinkedIn Carousel: The AI Developer Workflow",
-                    "platform": "LinkedIn",
-                    "format": "Carousel",
+                    "title": f"{platform_name} {platform_format}: The AI Developer Workflow",
+                    "platform": platform_name,
+                    "format": platform_format,
                     "hook": "AI isn't replacing software engineers. It's promoting them to architects.",
                     "conclusion": "Think in systems, not just syntax.",
                     "callToAction": "Follow for more insights on modern software engineering.",
@@ -291,7 +360,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "sec-slide-1",
                             "order": 1,
-                            "title": "Slide 1: Hook",
+                            "title": "Section 1: Hook",
                             "narration": "AI isn't replacing developers. It's promoting them to architects.",
                             "visualNotes": "Bold title text centered on a dark background with a subtle gradient.",
                             "onScreenText": "AI isn't replacing developers. It's promoting them to architects.",
@@ -300,7 +369,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "sec-slide-2",
                             "order": 2,
-                            "title": "Slide 2: The Problem",
+                            "title": "Section 2: The Problem",
                             "narration": "The Old Way:\n- Writing boilerplate\n- Fixing syntax typos\n- Memorizing APIs",
                             "visualNotes": "Split layout: an hourglass icon on the left, bullet points on the right.",
                             "onScreenText": "The Old Way:\n- Writing boilerplate\n- Fixing syntax typos\n- Memorizing APIs",
@@ -309,7 +378,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "sec-slide-3",
                             "order": 3,
-                            "title": "Slide 3: The Shift",
+                            "title": "Section 3: The Shift",
                             "narration": "The New Way:\nYour value is in the direction, not the typing.",
                             "visualNotes": "A flowchart showing 'Idea -> AI Execution -> Developer Review'.",
                             "onScreenText": "The New Way:\nYour value is in the direction, not the typing.",
@@ -318,7 +387,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "sec-slide-4",
                             "order": 4,
-                            "title": "Slide 4: Skill 1 - Prompting",
+                            "title": "Section 4: Skill 1 - Prompting",
                             "narration": "Skill 1: Contextual Prompting\nClear instructions yield clean code.",
                             "visualNotes": "A graphic of a chat interface showing a well-structured prompt.",
                             "onScreenText": "Skill 1: Contextual Prompting\nClear instructions yield clean code.",
@@ -327,7 +396,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "sec-slide-5",
                             "order": 5,
-                            "title": "Slide 5: Skill 2 - Code Review",
+                            "title": "Section 5: Skill 2 - Code Review",
                             "narration": "Skill 2: Advanced Code Review\nTrust, but rigorously verify.",
                             "visualNotes": "A magnifying glass over a block of code with highlighted syntax.",
                             "onScreenText": "Skill 2: Advanced Code Review\nTrust, but rigorously verify.",
@@ -336,7 +405,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "sec-slide-6",
                             "order": 6,
-                            "title": "Slide 6: The Takeaway",
+                            "title": "Section 6: The Takeaway",
                             "narration": "Think in systems, not just syntax.",
                             "visualNotes": "A structural blueprint graphic transitioning into a modern tech stack logo.",
                             "onScreenText": "Think in systems, not just syntax.",
@@ -345,7 +414,7 @@ class DemoProvider(BaseAIProvider):
                         {
                             "id": "sec-slide-7",
                             "order": 7,
-                            "title": "Slide 7: Call to Action",
+                            "title": "Section 7: Call to Action",
                             "narration": "How has AI changed your workflow?\n\nFollow for more insights on modern software engineering.",
                             "visualNotes": "Profile picture, name, and a prominent 'Follow' button.",
                             "onScreenText": "How has AI changed your workflow?\n\nFollow for more insights on modern software engineering.",
