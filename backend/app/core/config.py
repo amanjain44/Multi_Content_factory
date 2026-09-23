@@ -4,9 +4,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Multimodal Content Factory API"
     API_V1_STR: str = "/api"
     
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
+    POSTGRES_USER: str | None = None
+    POSTGRES_PASSWORD: str | None = None
+    POSTGRES_DB: str | None = None
     DATABASE_URL: str
     
     FRONTEND_URL: str = "http://localhost:3000"
