@@ -14,6 +14,7 @@ interface ContentTypeStageProps {
 
 export function ContentTypeStage({ project, activeStage, onComplete }: ContentTypeStageProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [data, setData] = useState<any>(activeStage.data || null);
   const [error, setError] = useState<string | null>(null);
   
@@ -42,6 +43,9 @@ export function ContentTypeStage({ project, activeStage, onComplete }: ContentTy
   };
 
   const handleApprove = async (type: string) => {
+    if (isApproving) return;
+    setIsApproving(true);
+    setError(null);
     try {
       const updatedData = { ...data, approved_type: type };
       setData(updatedData);
@@ -51,9 +55,11 @@ export function ContentTypeStage({ project, activeStage, onComplete }: ContentTy
         data: updatedData
       });
       
-      onComplete();
+      await onComplete();
     } catch (e: any) {
       setError(e.message || 'Failed to approve content type');
+    } finally {
+      setIsApproving(false);
     }
   };
 
@@ -141,7 +147,7 @@ export function ContentTypeStage({ project, activeStage, onComplete }: ContentTy
         <div 
           className={`glass-panel p-6 rounded-2xl border-2 transition-all cursor-pointer hover:border-primary/50 relative overflow-hidden group ${
             approvedType === recommendedType ? 'border-primary bg-primary/5' : 'border-border'
-          }`}
+          } ${isApproving ? 'opacity-50 pointer-events-none' : ''}`}
           onClick={() => handleApprove(recommendedType)}
         >
           <div className="absolute right-6 top-6 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -196,7 +202,7 @@ export function ContentTypeStage({ project, activeStage, onComplete }: ContentTy
                 key={i}
                 className={`p-4 rounded-xl border transition-all cursor-pointer hover:border-primary/50 relative overflow-hidden group ${
                   approvedType === alt ? 'border-primary bg-primary/5' : 'border-border bg-card hover:bg-muted/50'
-                }`}
+                } ${isApproving ? 'opacity-50 pointer-events-none' : ''}`}
                 onClick={() => handleApprove(alt)}
               >
                 {approvedType === alt && (

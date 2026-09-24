@@ -16,6 +16,7 @@ interface Props {
 
 export function TopicAngleStage({ project, activeStage, onComplete }: Props) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [angles, setAngles] = useState<TopicAngle[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -62,9 +63,14 @@ export function TopicAngleStage({ project, activeStage, onComplete }: Props) {
     });
   };
 
-  const handleConfirm = () => {
-    if (selectedId) {
-      onComplete();
+  const handleConfirm = async () => {
+    if (selectedId && !isApproving) {
+      setIsApproving(true);
+      try {
+        await onComplete();
+      } finally {
+        setIsApproving(false);
+      }
     }
   };
 
@@ -126,10 +132,20 @@ export function TopicAngleStage({ project, activeStage, onComplete }: Props) {
         {selectedId && activeStage.status !== 'Completed' && (
           <button 
             onClick={handleConfirm}
-            className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md shrink-0"
+            disabled={isApproving}
+            className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span>Confirm Angle</span>
-            <ArrowRight className="w-4 h-4" />
+            {isApproving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Confirming...</span>
+              </>
+            ) : (
+              <>
+                <span>Confirm Angle</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         )}
       </div>
@@ -169,10 +185,14 @@ export function TopicAngleStage({ project, activeStage, onComplete }: Props) {
               <div className="mt-auto space-y-4 pt-4 border-t border-border/50">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-1 block">Primary Target Persona</span>
+                    <span className="text-xs text-foreground/90">{angle.targetAudience}</span>
+                  </div>
+                  <div>
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-1 block">Core Promise</span>
                     <span className="text-xs text-foreground/90">{angle.corePromise}</span>
                   </div>
-                  <div>
+                  <div className="sm:col-span-2">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-1 block">Differentiation</span>
                     <span className="text-xs text-foreground/90">{angle.differentiation}</span>
                   </div>

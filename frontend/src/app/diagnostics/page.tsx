@@ -71,10 +71,26 @@ export default function DiagnosticsPage() {
             Real-time health and configuration status of the MCF architecture.
           </p>
         </div>
-        <Button onClick={loadDiagnostics} disabled={loading} className="gap-2 bg-white dark:bg-card border border-slate-200 dark:border-border text-slate-700 dark:text-foreground hover:bg-slate-50 dark:hover:bg-muted shadow-sm rounded-full">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          Refresh Diagnostics
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={loadDiagnostics} disabled={loading} className="gap-2 bg-white dark:bg-card border border-slate-200 dark:border-border text-slate-700 dark:text-foreground hover:bg-slate-50 dark:hover:bg-muted shadow-sm rounded-full">
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            Refresh Diagnostics
+          </Button>
+          <Button 
+            onClick={() => {
+              if (confirm('Clear local cache and reset state?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.reload();
+              }
+            }}
+            variant="outline" 
+            className="gap-2 shadow-sm rounded-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Clear Local Cache & Reset
+          </Button>
+        </div>
       </div>
 
       {error && (

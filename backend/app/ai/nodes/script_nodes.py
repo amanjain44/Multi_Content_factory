@@ -105,7 +105,12 @@ async def generate_script(state: AIState) -> Dict[str, Any]:
     context_str = f"Extra Grounding Context (use if relevant):\n{grounding_text}\n\n" if grounding_text else ""
 
     approved_type = state.get("approved_content_type")
-    type_str = f"Target Content Type: {approved_type}\nNOTE: Ensure the script formatting is appropriate for a {approved_type}.\n" if approved_type else ""
+    type_str = f"""
+CRITICAL INSTRUCTION:
+The user has explicitly approved the Content Type: {approved_type}.
+You MUST generate a final script that is 100% {approved_type}-oriented.
+Do NOT recommend or output any other content type.
+""" if approved_type else ""
 
     prompt = f"""
     Based on the following approved storyboard and complete workflow context, generate a final,

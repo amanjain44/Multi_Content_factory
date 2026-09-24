@@ -15,14 +15,18 @@ class DemoProvider(BaseAIProvider):
         
         # Check if an approved type was injected into the prompt
         approved_type = "Carousel" # default
-        if "Target Content Type: Video" in prompt:
+        if "approved the Content Type: \"Video\"" in prompt or "Target Content Type: Video" in prompt:
             approved_type = "Video"
-        elif "Target Content Type: Article" in prompt:
+        elif "approved the Content Type: \"Article\"" in prompt or "Target Content Type: Article" in prompt:
             approved_type = "Article"
-        elif "Target Content Type: Carousel" in prompt:
+        elif "approved the Content Type: \"Carousel\"" in prompt or "Target Content Type: Carousel" in prompt:
             approved_type = "Carousel"
-        elif "Target Content Type: Social Post" in prompt:
+        elif "approved the Content Type: \"Social Post\"" in prompt or "Target Content Type: Social Post" in prompt:
             approved_type = "Social Post"
+        elif "approved the Content Type: \"Image\"" in prompt or "Target Content Type: Image" in prompt:
+            approved_type = "Image"
+        elif "approved the Content Type: \"Newsletter\"" in prompt or "Target Content Type: Newsletter" in prompt:
+            approved_type = "Newsletter"
             
         platform_name = "YouTube" if is_youtube else ("Twitter" if is_twitter else "LinkedIn")
         platform_format = "Video" if is_youtube else ("Thread" if is_twitter else "Carousel")
@@ -184,6 +188,84 @@ class DemoProvider(BaseAIProvider):
                             "keyPoints": ["Be specific", "Provide context", "Iterate quickly"],
                             "potentialAudience": "Developers scrolling on social media",
                             "estimatedValue": "High virality potential"
+                        }
+                    ]
+                }
+            elif approved_type == "Image":
+                mock_data = {
+                    "opportunities": [
+                        {
+                            "id": "opt-image-1",
+                            "title": "Infographic: The Developer's New Workflow",
+                            "summary": "A highly visual infographic comparing the traditional coding workflow with the new AI-assisted workflow.",
+                            "whyInteresting": "Infographics are highly shareable on LinkedIn and Twitter and distill complex ideas into quick visuals.",
+                            "keyPoints": ["Side-by-side comparison", "Time saved metrics", "Code review emphasis"],
+                            "potentialAudience": "Tech community and engineering managers",
+                            "estimatedValue": "High shareability"
+                        },
+                        {
+                            "id": "opt-image-2",
+                            "title": "Single Image Quote: The Architect Mindset",
+                            "summary": "A clean, typography-focused image highlighting a powerful quote about developers becoming architects.",
+                            "whyInteresting": "Quote images perform exceptionally well for thought leadership.",
+                            "keyPoints": ["Strong quote", "Minimalist aesthetic", "Clear branding"],
+                            "potentialAudience": "Software engineers and founders",
+                            "estimatedValue": "High engagement"
+                        },
+                        {
+                            "id": "opt-image-3",
+                            "title": "Diagram: AI Prompting Architecture",
+                            "summary": "A technical architecture diagram showing how a good prompt interacts with an LLM for code generation.",
+                            "whyInteresting": "Developers love technical diagrams and frequently save them for reference.",
+                            "keyPoints": ["System architecture style", "Context window explanation", "Iterative feedback loop"],
+                            "potentialAudience": "Senior developers and AI enthusiasts",
+                            "estimatedValue": "High bookmark/save rate"
+                        }
+                    ]
+                }
+            elif approved_type == "Newsletter":
+                mock_data = {
+                    "opportunities": [
+                        {
+                            "id": "opt-news-1",
+                            "title": "Deep Dive Newsletter: The Evolution of Coding",
+                            "summary": "A comprehensive newsletter edition exploring how AI is fundamentally changing the way we build software.",
+                            "whyInteresting": "Newsletters allow for long-form, intimate connection with a dedicated audience.",
+                            "keyPoints": ["Historical context", "The shift to reviewing", "Actionable advice for the week"],
+                            "potentialAudience": "Subscribed developers and tech leaders",
+                            "estimatedValue": "High trust and authority building"
+                        }
+                    ]
+                }
+            elif approved_type == "Video":
+                mock_data = {
+                    "opportunities": [
+                        {
+                            "id": "opt-video-1",
+                            "title": "YouTube Video: From Typist to Architect",
+                            "summary": "An in-depth video essay exploring the evolution of software engineering in the age of AI.",
+                            "whyInteresting": "YouTube allows for deeper dives and screen recordings to demonstrate the actual workflow shift in real-time.",
+                            "keyPoints": ["Visual demonstration of AI assistants", "Code review vs writing code"],
+                            "potentialAudience": "Developers looking for tutorials",
+                            "estimatedValue": "High retention and long-tail discoverability"
+                        },
+                        {
+                            "id": "opt-video-2",
+                            "title": "TikTok/Reels: 3 AI Prompting Tips",
+                            "summary": "A rapid-fire short video showing 3 powerful prompt patterns for developers.",
+                            "whyInteresting": "Short-form video is highly engaging and drives massive reach.",
+                            "keyPoints": ["Be specific", "Provide context", "Iterate"],
+                            "potentialAudience": "Junior developers scrolling social media",
+                            "estimatedValue": "High virality potential"
+                        },
+                        {
+                            "id": "opt-video-3",
+                            "title": "Webinar: The New Developer Stack",
+                            "summary": "A long-form live or recorded presentation walking through an end-to-end AI assisted project build.",
+                            "whyInteresting": "High intent audience looking to adopt new tools.",
+                            "keyPoints": ["AI coding tools help reduce repetitive boilerplate tasks", "Practical examples: generating test suites and documentation"],
+                            "potentialAudience": "Tech leads, engineering managers",
+                            "estimatedValue": "High value lead generation"
                         }
                     ]
                 }

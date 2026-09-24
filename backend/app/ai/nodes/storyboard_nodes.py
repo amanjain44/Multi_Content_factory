@@ -71,7 +71,13 @@ async def generate_storyboard(state: AIState) -> Dict[str, Any]:
     context_str = f"Extra Grounding Context (use if relevant):\n{grounding_text}\n\n" if grounding_text else ""
     
     approved_type = state.get("approved_content_type")
-    type_str = f"Target Content Type: {approved_type}\nNOTE: Ensure the storyboard structure matches what is expected for a {approved_type} (e.g., slides for a Carousel, scenes for a Video).\n" if approved_type else ""
+    type_str = f"""
+CRITICAL INSTRUCTION:
+The user has explicitly approved the Content Type: {approved_type}.
+You MUST generate a storyboard/outline that is 100% {approved_type}-oriented.
+For Video, generate scenes. For Carousel, generate slides. For Article/Newsletter/Social Post, generate structural sections.
+Do NOT recommend any other content type.
+""" if approved_type else ""
 
     prompt = f"""
     Based on the following context and analysis, generate a comprehensive scene-by-scene storyboard.

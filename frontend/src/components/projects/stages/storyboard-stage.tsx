@@ -16,6 +16,7 @@ interface Props {
 
 export function StoryboardStage({ project, activeStage, onComplete }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedStoryboard, setEditedStoryboard] = useState<Storyboard | null>(null);
@@ -92,24 +93,29 @@ export function StoryboardStage({ project, activeStage, onComplete }: Props) {
   };
 
   const handleApprove = async () => {
-    if (!storyboard) return;
+    if (!storyboard || isApproving) return;
 
-    const error = validateStoryboard(storyboard);
-    if (error) {
-      setValidationError(error);
-      return;
+    setIsApproving(true);
+    try {
+      const error = validateStoryboard(storyboard);
+      if (error) {
+        setValidationError(error);
+        return;
+      }
+
+      const finalStoryboard = { ...storyboard, status: 'Approved' as const };
+      
+      await ProjectService.updateWorkflowStage(project.id, activeStage.id, {
+        data: { ...activeStage.data, storyboard: finalStoryboard }
+      });
+      
+      setStoryboard(finalStoryboard);
+      setEditedStoryboard(finalStoryboard);
+      setValidationError(null);
+      await onComplete(); // This unlocks the Script stage
+    } finally {
+      setIsApproving(false);
     }
-
-    const finalStoryboard = { ...storyboard, status: 'Approved' as const };
-    
-    await ProjectService.updateWorkflowStage(project.id, activeStage.id, {
-      data: { ...activeStage.data, storyboard: finalStoryboard }
-    });
-    
-    setStoryboard(finalStoryboard);
-    setEditedStoryboard(finalStoryboard);
-    setValidationError(null);
-    onComplete(); // This unlocks the Script stage
   };
 
   const handleSceneChange = (sceneId: string, field: keyof StoryboardScene, value: string) => {
@@ -257,10 +263,20 @@ export function StoryboardStage({ project, activeStage, onComplete }: Props) {
               </button>
               <button 
                 onClick={handleApprove}
-                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md"
+                disabled={isApproving}
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Check className="w-4 h-4" />
-                <span>Approve Storyboard</span>
+                {isApproving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Approving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Approve Storyboard</span>
+                  </>
+                )}
               </button>
             </>
           )}

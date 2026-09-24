@@ -16,6 +16,7 @@ interface Props {
 
 export function ScriptStage({ project, activeStage, onComplete }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [script, setScript] = useState<Script | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedScript, setEditedScript] = useState<Script | null>(null);
@@ -94,28 +95,33 @@ export function ScriptStage({ project, activeStage, onComplete }: Props) {
   };
 
   const handleApprove = async () => {
-    if (!script) return;
+    if (!script || isApproving) return;
 
-    const error = validateScript(script);
-    if (error) {
-      setValidationError(error);
-      return;
+    setIsApproving(true);
+    try {
+      const error = validateScript(script);
+      if (error) {
+        setValidationError(error);
+        return;
+      }
+
+      const finalScript = { ...script, status: 'Approved' as const };
+      
+      // Update stage data
+      await ProjectService.updateWorkflowStage(project.id, activeStage.id, {
+        data: { ...activeStage.data, script: finalScript }
+      });
+      
+      // Mark Project as completed
+      await ProjectService.updateProjectStatus(project.id, 'Completed');
+      
+      setScript(finalScript);
+      setEditedScript(finalScript);
+      setValidationError(null);
+      await onComplete(); // This marks the final stage as Complete
+    } finally {
+      setIsApproving(false);
     }
-
-    const finalScript = { ...script, status: 'Approved' as const };
-    
-    // Update stage data
-    await ProjectService.updateWorkflowStage(project.id, activeStage.id, {
-      data: { ...activeStage.data, script: finalScript }
-    });
-    
-    // Mark Project as completed
-    await ProjectService.updateProjectStatus(project.id, 'Completed');
-    
-    setScript(finalScript);
-    setEditedScript(finalScript);
-    setValidationError(null);
-    onComplete(); // This marks the final stage as Complete
   };
 
   const handleScriptChange = (field: keyof Script, value: any) => {
@@ -319,10 +325,20 @@ export function ScriptStage({ project, activeStage, onComplete }: Props) {
               </button>
               <button 
                 onClick={handleApprove}
-                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-green-500 text-white font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md"
+                disabled={isApproving}
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-green-500 text-white font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Check className="w-4 h-4" />
-                <span>Approve & Complete Project</span>
+                {isApproving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Completing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Approve & Complete Project</span>
+                  </>
+                )}
               </button>
             </>
           )}

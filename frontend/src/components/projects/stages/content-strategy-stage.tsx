@@ -16,6 +16,7 @@ interface Props {
 
 export function ContentStrategyStage({ project, activeStage, onComplete }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [strategy, setStrategy] = useState<ContentStrategy | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedStrategy, setEditedStrategy] = useState<ContentStrategy | null>(null);
@@ -59,16 +60,21 @@ export function ContentStrategyStage({ project, activeStage, onComplete }: Props
   };
 
   const handleSaveAndContinue = async () => {
-    if (!editedStrategy) return;
+    if (!editedStrategy || isApproving) return;
     
-    // Save the edited strategy
-    await ProjectService.updateWorkflowStage(project.id, activeStage.id, {
-      data: { ...activeStage.data, strategy: editedStrategy }
-    });
-    
-    setIsEditing(false);
-    setStrategy(editedStrategy);
-    onComplete();
+    setIsApproving(true);
+    try {
+      // Save the edited strategy
+      await ProjectService.updateWorkflowStage(project.id, activeStage.id, {
+        data: { ...activeStage.data, strategy: editedStrategy }
+      });
+      
+      setIsEditing(false);
+      setStrategy(editedStrategy);
+      await onComplete();
+    } finally {
+      setIsApproving(false);
+    }
   };
 
   const handleFieldChange = (field: keyof ContentStrategy, value: any) => {
@@ -154,10 +160,20 @@ export function ContentStrategyStage({ project, activeStage, onComplete }: Props
           ) : (
             <button 
               onClick={handleSaveAndContinue}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md"
+              disabled={isApproving}
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="w-4 h-4" />
-              <span>Save & Continue</span>
+              {isApproving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Save & Continue</span>
+                </>
+              )}
             </button>
           )}
         </div>
@@ -191,6 +207,21 @@ export function ContentStrategyStage({ project, activeStage, onComplete }: Props
                   value={editedStrategy.targetAudience}
                   onChange={(e) => handleFieldChange('targetAudience', e.target.value)}
                   className="w-full text-sm bg-background border border-border/50 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-primary min-h-[80px]"
+                />
+              )}
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Editorial Tone & Delivery</label>
+              {isReadOnly ? (
+                <p className="text-sm text-foreground/90 bg-muted/30 p-3 rounded-xl border border-border/30">{strategy.tone}</p>
+              ) : (
+                <textarea 
+                  value={editedStrategy.tone}
+                  onChange={(e) => handleFieldChange('tone', e.target.value)}
+                  className="w-full text-sm bg-background border border-border/50 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-primary min-h-[50px]"
                 />
               )}
             </div>

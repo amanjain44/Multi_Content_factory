@@ -73,7 +73,12 @@ async def generate_strategy(state: AIState) -> Dict[str, Any]:
     grounding_context = state.get("grounding_context", {})
     grounding_text = grounding_context.get("text", "")
     approved_type = state.get("approved_content_type")
-    type_str = f"Target Content Type: {approved_type}\nNOTE: Ensure the entire content strategy is optimized for a {approved_type}.\n" if approved_type else ""
+    type_str = f"""
+CRITICAL INSTRUCTION:
+The user has explicitly approved the Content Type: {approved_type}.
+You MUST generate a content strategy that is 100% {approved_type}-oriented.
+The strategy MUST be compatible with {approved_type}. Do NOT recommend any other content type.
+""" if approved_type else ""
     context_str = f"Extra Grounding Context (use if relevant):\n{grounding_text}\n\n" if grounding_text else ""
 
     prompt = f"""

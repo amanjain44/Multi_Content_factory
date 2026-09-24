@@ -16,6 +16,7 @@ interface Props {
 
 export function ContentSelectionStage({ project, activeStage, onComplete }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [opportunities, setOpportunities] = useState<ContentOpportunity[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,9 +58,14 @@ export function ContentSelectionStage({ project, activeStage, onComplete }: Prop
     });
   };
 
-  const handleConfirm = () => {
-    if (selectedId) {
-      onComplete();
+  const handleConfirm = async () => {
+    if (selectedId && !isApproving) {
+      setIsApproving(true);
+      try {
+        await onComplete();
+      } finally {
+        setIsApproving(false);
+      }
     }
   };
 
@@ -150,10 +156,20 @@ export function ContentSelectionStage({ project, activeStage, onComplete }: Prop
             <button
               id="btn-confirm-content-selection"
               onClick={handleConfirm}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md"
+              disabled={isApproving}
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>Confirm Selection</span>
-              <ArrowRight className="w-4 h-4" />
+              {isApproving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Approving...</span>
+                </>
+              ) : (
+                <>
+                  <span>Confirm Selection</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           )}
         </div>

@@ -34,6 +34,7 @@ interface Props {
 
 export function PlatformStrategyStage({ project, activeStage, onComplete }: Props) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [recommendations, setRecommendations] = useState<PlatformRecommendation[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -84,9 +85,14 @@ export function PlatformStrategyStage({ project, activeStage, onComplete }: Prop
     });
   };
 
-  const handleConfirm = () => {
-    if (selectedIds.length > 0) {
-      onComplete();
+  const handleConfirm = async () => {
+    if (selectedIds.length > 0 && !isApproving) {
+      setIsApproving(true);
+      try {
+        await onComplete();
+      } finally {
+        setIsApproving(false);
+      }
     }
   };
 
@@ -159,10 +165,20 @@ export function PlatformStrategyStage({ project, activeStage, onComplete }: Prop
         {selectedIds.length > 0 && activeStage.status !== 'Completed' && (
           <button 
             onClick={handleConfirm}
-            className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md shrink-0"
+            disabled={isApproving}
+            className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span>Confirm Strategy</span>
-            <ArrowRight className="w-4 h-4" />
+            {isApproving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Confirming...</span>
+              </>
+            ) : (
+              <>
+                <span>Confirm Strategy</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         )}
       </div>

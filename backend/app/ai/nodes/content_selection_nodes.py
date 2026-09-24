@@ -54,10 +54,18 @@ async def generate_recommendations(state: AIState) -> Dict[str, Any]:
     context_str = f"Extra Grounding Context (use if relevant):\n{grounding_text}\n\n" if grounding_text else ""
     
     approved_type = state.get("approved_content_type")
-    type_str = f"Target Content Type: {approved_type}\nNOTE: ALL opportunities MUST be formats or styles suitable for a {approved_type}.\n" if approved_type else ""
+    type_str = f"""
+CRITICAL INSTRUCTION:
+The user has explicitly approved the Content Type: "{approved_type}".
+You MUST generate 3-5 distinct content angles or ideas that are STRICTLY "{approved_type}" formats.
+Do NOT suggest any other formats. If the approved type is Video, all opportunities must be videos. If it is Carousel, all must be carousels.
+EVERY single opportunity must be a {approved_type}.
+""" if approved_type else "Recommend 3-5 distinct content formats or angles (Content Opportunities) that would be highly valuable for the target audience."
     
     prompt = f"""
-    Based on the following source material and its analysis, recommend 3-5 distinct content formats or angles (Content Opportunities) that would be highly valuable for the target audience.
+    Based on the following source material and its analysis, generate the content opportunities.
+    
+    {type_str}
     
     Source Material:
     {input_text}
