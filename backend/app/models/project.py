@@ -28,3 +28,6 @@ class Project(Base):
 
     # Relationship to Schedules
     schedules = relationship("Schedule", back_populates="project", cascade="all, delete-orphan", order_by="Schedule.scheduled_at")
+
+    # Relationship to SourceDocuments
+    sources = relationship("SourceDocument", back_populates="project", cascade="all, delete-orphan")

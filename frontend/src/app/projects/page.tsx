@@ -4,14 +4,44 @@ import React, { useEffect, useState } from 'react';
 import { ProjectService } from '@/lib/project-service';
 import { Project } from '@/types/project';
 import { ProjectCard } from '@/components/projects/project-card';
-import { Search, Plus, Filter, LayoutGrid } from 'lucide-react';
+import { Search, Plus, Filter, LayoutGrid, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Delete project state
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete || isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const success = await ProjectService.deleteProject(projectToDelete.id);
+      if (success) {
+        setProjects(projects.filter(p => p.id !== projectToDelete.id));
+        setProjectToDelete(null);
+      } else {
+        setDeleteError('Failed to delete project. Please try again.');
+      }
+    } catch (e) {
+      setDeleteError('An unexpected error occurred.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -87,7 +117,11 @@ export default function ProjectsPage() {
       ) : filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map(project => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard 
+              key={project.id} 
+              project={project} 
+              onDelete={(p) => setProjectToDelete(p)}
+            />
           ))}
         </div>
       ) : (
@@ -118,6 +152,43 @@ export default function ProjectsPage() {
           )}
         </div>
       )}
+
+      <Dialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete this project?</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to permanently delete <strong>{projectToDelete?.title}</strong>? This will permanently remove the project and all associated data, including generated content and source documents. This action cannot be undone.
+            </p>
+            {deleteError && (
+              <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg">
+                {deleteError}
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-3 mt-4">
+            <button
+              type="button"
+              className="px-4 py-2 text-sm font-medium text-foreground bg-secondary hover:bg-secondary/80 rounded-full transition-colors"
+              onClick={() => setProjectToDelete(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="px-4 py-2 text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-full transition-colors inline-flex items-center gap-2"
+              onClick={handleDeleteProject}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              <span>{isDeleting ? 'Deleting...' : 'Delete Project'}</span>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

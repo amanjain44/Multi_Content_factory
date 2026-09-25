@@ -6,8 +6,14 @@ import { ProjectService, DEFAULT_STAGES } from '@/lib/project-service';
 import { Project, ProjectStatus } from '@/types/project';
 import { WorkflowSidebar } from '@/components/projects/workflow-sidebar';
 import { WorkspaceContent } from '@/components/projects/workspace-content';
-import { ArrowLeft, CheckCircle2, Clock, PlayCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, PlayCircle, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function ProjectWorkspace() {
   const params = useParams();
@@ -17,6 +23,9 @@ export default function ProjectWorkspace() {
   const [project, setProject] = useState<Project | null>(null);
   const [activeStageId, setActiveStageId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -59,6 +68,24 @@ export default function ProjectWorkspace() {
       await ProjectService.updateWorkflowStage(project.id, activeStageId, { status: 'Completed' });
       const finalProject = await ProjectService.updateProjectStatus(project.id, 'Completed');
       setProject(finalProject);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!project || isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const success = await ProjectService.deleteProject(project.id);
+      if (success) {
+        router.push('/projects');
+      } else {
+        setDeleteError('Failed to delete project. Please try again.');
+        setIsDeleting(false);
+      }
+    } catch (e) {
+      setDeleteError('An unexpected error occurred.');
+      setIsDeleting(false);
     }
   };
 
@@ -119,6 +146,16 @@ export default function ProjectWorkspace() {
              <Clock className="w-3.5 h-3.5" />}
             <span>{project.status}</span>
           </div>
+          
+          <div className="h-4 w-px bg-border/50 hidden sm:block" />
+          
+          <button 
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+            title="Delete Project"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -136,6 +173,43 @@ export default function ProjectWorkspace() {
           onAdvanceStage={handleAdvanceStage}
         />
       </div>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete this project?</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to permanently delete <strong>{project.title}</strong>? This will permanently remove the project and all associated data, including generated content and source documents. This action cannot be undone.
+            </p>
+            {deleteError && (
+              <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg">
+                {deleteError}
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-3 mt-4">
+            <button
+              type="button"
+              className="px-4 py-2 text-sm font-medium text-foreground bg-secondary hover:bg-secondary/80 rounded-full transition-colors"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="px-4 py-2 text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-full transition-colors inline-flex items-center gap-2"
+              onClick={handleDeleteProject}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              <span>{isDeleting ? 'Deleting...' : 'Delete Project'}</span>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

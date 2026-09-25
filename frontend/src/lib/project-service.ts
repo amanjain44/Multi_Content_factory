@@ -61,6 +61,16 @@ export const ProjectService = {
     }
   },
 
+  deleteProject: async (id: string): Promise<boolean> => {
+    try {
+      await apiClient.delete(`/projects/${id}`);
+      return true;
+    } catch (e) {
+      console.error(`Failed to delete project ${id}`, e);
+      return false;
+    }
+  },
+
   updateWorkflowStage: async (projectId: string, stageId: string, updates: Partial<WorkflowStage>): Promise<Project | null> => {
     try {
       // Find the stage type from the stageId if needed, but since we need stage_type for the backend API,

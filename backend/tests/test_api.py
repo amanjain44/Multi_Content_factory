@@ -193,3 +193,36 @@ async def test_cross_user_isolation(authenticated_client: AsyncClient, db_sessio
         res = await ac2.get("/api/projects")
         assert res.status_code == 200
         assert len(res.json()) == 0
+
+@pytest.mark.asyncio
+async def test_delete_project(authenticated_client: AsyncClient, db_session):
+    # 1. Create a project
+    project_data = {
+        "title": "Project to Delete",
+        "description": "Will be deleted",
+        "source_type": "URL",
+        "source_reference": "http://example.com/delete"
+    }
+    
+    response = await authenticated_client.post("/api/projects", json=project_data)
+    assert response.status_code == 201
+    created_project = response.json()
+    project_id = created_project["id"]
+    
+    # 2. Verify it exists
+    response = await authenticated_client.get(f"/api/projects/{project_id}")
+    assert response.status_code == 200
+    
+    # 3. Delete it
+    response = await authenticated_client.delete(f"/api/projects/{project_id}")
+    assert response.status_code == 204
+    
+    # 4. Verify it's gone
+    response = await authenticated_client.get(f"/api/projects/{project_id}")
+    assert response.status_code == 404
+
+@pytest.mark.asyncio
+async def test_delete_nonexistent_project(authenticated_client: AsyncClient):
+    fake_id = str(uuid.uuid4())
+    response = await authenticated_client.delete(f"/api/projects/{fake_id}")
+    assert response.status_code == 404

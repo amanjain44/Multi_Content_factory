@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Project, ProjectStatus } from '@/types/project';
-import { Clock, CheckCircle2, AlertCircle, PlayCircle, FileText, Globe } from 'lucide-react';
+import { Clock, CheckCircle2, AlertCircle, PlayCircle, FileText, Globe, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns'; // Wait, is date-fns installed? I can just use a simple formatter or Intl.RelativeTimeFormat
 
 const getStatusColor = (status: ProjectStatus) => {
@@ -44,20 +44,37 @@ function timeAgo(dateString: string) {
   }
 }
 
-export function ProjectCard({ project }: { project: Project }) {
+export function ProjectCard({ project, onDelete }: { project: Project, onDelete?: (project: Project) => void }) {
   const completedStages = project.stages.filter(s => s.status === 'Completed').length;
   const progressPercent = Math.round((completedStages / project.stages.length) * 100);
 
   return (
-    <Link href={`/projects/${project.id}`} className="group flex flex-col justify-between p-5 bg-white dark:bg-card border border-slate-200 dark:border-border rounded-2xl hover:border-primary/30 dark:hover:border-primary/50 hover:shadow-md transition-all duration-300">
-      <div>
+    <div className="group relative flex flex-col justify-between p-5 bg-white dark:bg-card border border-slate-200 dark:border-border rounded-2xl hover:border-primary/30 dark:hover:border-primary/50 hover:shadow-md transition-all duration-300">
+      <Link href={`/projects/${project.id}`} className="absolute inset-0 z-0" aria-label={`View project ${project.title}`} />
+      
+      <div className="relative z-10 pointer-events-none">
         <div className="flex items-start justify-between mb-4 gap-2">
           <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors line-clamp-2">
             {project.title}
           </h3>
-          <div className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
-            {getStatusIcon(project.status)}
-            <span>{project.status}</span>
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <div className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
+              {getStatusIcon(project.status)}
+              <span>{project.status}</span>
+            </div>
+            {onDelete && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete(project);
+                }}
+                className="p-1.5 text-slate-400 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 bg-white dark:bg-card"
+                title="Delete Project"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
         
@@ -97,6 +114,6 @@ export function ProjectCard({ project }: { project: Project }) {
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

@@ -24,7 +24,7 @@ class SourceDocument(Base):
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    project = relationship("Project", backref="sources")
+    project = relationship("Project", back_populates="sources")
     chunks = relationship("DocumentChunk", back_populates="source_document", cascade="all, delete-orphan", order_by="DocumentChunk.chunk_index")
 
 
