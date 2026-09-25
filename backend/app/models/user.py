@@ -10,5 +10,9 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+    
+    password_reset_token = Column(String, nullable=True, index=True)
+    password_reset_expires_at = Column(Integer, nullable=True)
+    password_reset_requested_at = Column(Integer, nullable=True)
 
     projects = relationship("Project", back_populates="owner", cascade="all, delete-orphan")

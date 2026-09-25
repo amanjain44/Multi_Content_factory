@@ -28,6 +28,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   const checkAuth = async () => {
+    // Yield to the event loop to prevent synchronous setState in useEffect, 
+    // which causes cascading render warnings and can get stuck in StrictMode.
+    await Promise.resolve();
+    
     try {
       const token = localStorage.getItem('access_token');
       if (!token) {
@@ -52,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isLoading) {
-      const publicRoutes = ['/login', '/register'];
+      const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
       if (!user && !publicRoutes.includes(pathname)) {
         router.push('/login');
       } else if (user && publicRoutes.includes(pathname)) {
