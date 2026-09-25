@@ -2,6 +2,7 @@ from typing import Any, Dict
 from ..schemas import AIState, StoryboardOutput
 from ..providers.factory import AIProviderFactory
 from ..config import AIConfig
+from ..prompts import GLOBAL_RELEVANCE_REQUIREMENT
 
 def get_provider():
     from ...core.config import settings
@@ -27,6 +28,7 @@ async def analyze_context(state: AIState) -> Dict[str, Any]:
     provider = get_provider()
     
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Analyze the workflow context to prepare for Storyboard generation.
     
     Approved Content Strategy:
@@ -80,6 +82,7 @@ Do NOT recommend any other content type.
 """ if approved_type else ""
 
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Based on the following context and analysis, generate a comprehensive scene-by-scene storyboard.
     
     {context_str}

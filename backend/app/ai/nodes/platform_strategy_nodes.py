@@ -2,6 +2,7 @@ from typing import Any, Dict
 from ..schemas import AIState, PlatformStrategyOutput
 from ..providers.factory import AIProviderFactory
 from ..config import AIConfig
+from ..prompts import GLOBAL_RELEVANCE_REQUIREMENT
 
 def get_provider():
     from ...core.config import settings
@@ -24,6 +25,7 @@ async def analyze_content(state: AIState) -> Dict[str, Any]:
     provider = get_provider()
     
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Analyze the following source material and the specific content opportunity the user selected.
     Extract the core themes and the target audience to prepare for platform strategy recommendations.
     
@@ -67,6 +69,7 @@ The format MUST be compatible with {approved_type}. Do NOT recommend any other c
 """ if approved_type else ""
     
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Based on the following source material, the selected content opportunity, and the analysis, recommend 2-4 platforms that would be highly suitable for publishing this content.
     
     Source Material:

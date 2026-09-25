@@ -85,6 +85,8 @@ async def test_generate_recommendations_success():
             opportunities=[
                 ContentOpportunity(
                     id="opt-1",
+                    content_type="Video",
+                    platform="YouTube",
                     title="Short-Form Educational Video",
                     summary="A punchy video about AI coding.",
                     whyInteresting="Developers love short-form content.",
@@ -142,12 +144,15 @@ async def test_validate_result_passes_valid_output():
         "selected_platforms": None,
         "selected_angle": None,
         "approved_strategy": None,
+        "approved_content_type": "Video",
         "intent": None,
         "keywords": None,
         "structured_output": {
             "opportunities": [
                 {
                     "id": "opt-1",
+                    "content_type": "Video",
+                    "platform": "YouTube",
                     "title": "Test",
                     "summary": "Summary",
                     "whyInteresting": "Why",
@@ -161,7 +166,7 @@ async def test_validate_result_passes_valid_output():
         "retries": 0,
     }
     result = await validate_result(state)
-    assert result["error"] is None
+    assert result.get("error") is None
     assert result["structured_output"]["opportunities"][0]["id"] == "opt-1"
 
 

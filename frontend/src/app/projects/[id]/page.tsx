@@ -41,25 +41,24 @@ export default function ProjectWorkspace() {
   const handleAdvanceStage = async () => {
     if (!project || !activeStageId) return;
 
-    // Mark current stage as complete
-    const updated = await ProjectService.updateWorkflowStage(project.id, activeStageId, { status: 'Completed' });
-    
-    if (updated) {
-      const currentIndex = updated.stages.findIndex((s: any) => s.id === activeStageId);
-      const nextStage = updated.stages[currentIndex + 1];
+    const currentIndex = project.stages.findIndex((s: any) => s.id === activeStageId);
+    const nextStage = project.stages[currentIndex + 1];
 
-      if (nextStage) {
-        // Unlock next stage and set to in progress
-        const newlyUpdated = await ProjectService.updateWorkflowStage(updated.id, nextStage.id, { status: 'In Progress' });
-        if (newlyUpdated) {
-          setProject(newlyUpdated);
-          setActiveStageId(nextStage.id);
-        }
-      } else {
-        // All stages complete
-        const finalProject = await ProjectService.updateProjectStatus(updated.id, 'Completed');
-        setProject(finalProject);
+    if (nextStage) {
+      // Run updates concurrently to eliminate sequential network lag
+      const [_, newlyUpdated] = await Promise.all([
+        ProjectService.updateWorkflowStage(project.id, activeStageId, { status: 'Completed' }),
+        ProjectService.updateWorkflowStage(project.id, nextStage.id, { status: 'In Progress' })
+      ]);
+      
+      if (newlyUpdated) {
+        setProject(newlyUpdated);
+        setActiveStageId(nextStage.id);
       }
+    } else {
+      await ProjectService.updateWorkflowStage(project.id, activeStageId, { status: 'Completed' });
+      const finalProject = await ProjectService.updateProjectStatus(project.id, 'Completed');
+      setProject(finalProject);
     }
   };
 

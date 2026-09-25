@@ -317,7 +317,7 @@ SAMPLE_STRATEGY = {
     "tone": "Professional",
     "format": "Multi-scene video",
     "hookStrategy": "Bold claim",
-    "keyTalkingPoints": ["55% faster", "New tools"],
+    "keyTalkingPoints": ["Faster delivery", "New tools"],
     "callToAction": "Follow for more",
     "contentStructure": "Hook → Data → Tools → CTA",
     "platformAdaptations": [{"platform": "LinkedIn", "format": "Post", "notes": "Professional"}]

@@ -2,6 +2,7 @@ from typing import Any, Dict
 from ..schemas import AIState, ScriptOutput
 from ..providers.factory import AIProviderFactory
 from ..config import AIConfig
+from ..prompts import GLOBAL_RELEVANCE_REQUIREMENT
 
 
 def get_provider():
@@ -48,6 +49,7 @@ async def analyze_storyboard_context(state: AIState) -> Dict[str, Any]:
     platform_format = selected_platforms[0].get("recommendedFormat", "") if selected_platforms else ""
 
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Analyze the following approved storyboard and workflow context to prepare for Final Script generation.
 
     Source Topic: {input_text}
@@ -113,6 +115,7 @@ Do NOT recommend or output any other content type.
 """ if approved_type else ""
 
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Based on the following approved storyboard and complete workflow context, generate a final,
     publish-ready script. The script MUST follow the storyboard exactly — preserving scene order,
     narrative beats, and visual direction.

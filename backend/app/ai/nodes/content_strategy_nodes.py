@@ -2,6 +2,7 @@ from typing import Any, Dict
 from ..schemas import AIState, ContentStrategyOutput
 from ..providers.factory import AIProviderFactory
 from ..config import AIConfig
+from ..prompts import GLOBAL_RELEVANCE_REQUIREMENT
 
 def get_provider():
     from ...core.config import settings
@@ -28,6 +29,7 @@ async def analyze_context(state: AIState) -> Dict[str, Any]:
     platforms_str = ", ".join([p.get("platform", "Unknown") for p in selected_platforms])
     
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Analyze the workflow context to prepare for Content Strategy generation.
     
     Source Material:
@@ -82,6 +84,7 @@ The strategy MUST be compatible with {approved_type}. Do NOT recommend any other
     context_str = f"Extra Grounding Context (use if relevant):\n{grounding_text}\n\n" if grounding_text else ""
 
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Based on the following context and analysis, generate a comprehensive content strategy.
     
     Source Material:

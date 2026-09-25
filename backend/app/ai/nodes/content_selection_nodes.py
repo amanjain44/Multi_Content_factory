@@ -2,6 +2,7 @@ from typing import Any, Dict
 from ..schemas import AIState, ContentSelectionOutput
 from ..providers.factory import AIProviderFactory
 from ..config import AIConfig
+from ..prompts import GLOBAL_RELEVANCE_REQUIREMENT
 
 def get_provider():
     from ...core.config import settings
@@ -24,6 +25,7 @@ async def analyze_source(state: AIState) -> Dict[str, Any]:
     provider = get_provider()
     
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Analyze the following source material or idea. Identify the main themes, 
     the potential target audiences, and the core value proposition.
     
@@ -59,10 +61,12 @@ CRITICAL INSTRUCTION:
 The user has explicitly approved the Content Type: "{approved_type}".
 You MUST generate 3-5 distinct content angles or ideas that are STRICTLY "{approved_type}" formats.
 Do NOT suggest any other formats. If the approved type is Video, all opportunities must be videos. If it is Carousel, all must be carousels.
-EVERY single opportunity must be a {approved_type}.
-""" if approved_type else "Recommend 3-5 distinct content formats or angles (Content Opportunities) that would be highly valuable for the target audience."
+EVERY single opportunity must set its `content_type` field exactly to "{approved_type}".
+Separate the `platform` (e.g. LinkedIn, YouTube, Twitter, Instagram) from the `content_type`.
+""" if approved_type else "Recommend 3-5 distinct content formats or angles (Content Opportunities) that would be highly valuable for the target audience. Set the `content_type` field accurately for each."
     
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Based on the following source material and its analysis, generate the content opportunities.
     
     {type_str}
@@ -79,6 +83,8 @@ EVERY single opportunity must be a {approved_type}.
     
     For each opportunity, provide:
     - A unique ID (e.g. alphanumeric string like 'opt-1')
+    - The `content_type` (e.g. Carousel, Video, Article, Newsletter, Social Post)
+    - The target `platform`
     - A catchy title
     - A brief summary
     - Why it is interesting/valuable
@@ -112,4 +118,10 @@ async def validate_result(state: AIState) -> Dict[str, Any]:
     if not isinstance(output["opportunities"], list) or len(output["opportunities"]) == 0:
         return {"error": "Generated opportunities list is empty or invalid"}
         
+    approved_type = state.get("approved_content_type")
+    if approved_type:
+        for opp in output["opportunities"]:
+            if opp.get("content_type") != approved_type:
+                return {"error": f"Generated opportunity {opp.get('id')} has content_type {opp.get('content_type')}, but {approved_type} was approved."}
+                
     return state

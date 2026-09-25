@@ -28,7 +28,12 @@ export function ScriptStage({ project, activeStage, onComplete }: Props) {
   const platformStage = project.stages.find(s => s.type === 'platform-strategy');
 
   const storyboard = storyboardStage?.data?.storyboard;
-  const platform = platformStage?.data?.platforms?.find((p: any) => p.selected) || platformStage?.data?.platforms?.[0];
+  
+  // Platform and format can be read directly from the generated script,
+  // or fall back to the selected platform strategy if script is missing.
+  const selectedPlatformIds = platformStage?.data?.selectedIds || [];
+  const recommendations = platformStage?.data?.recommendations || [];
+  const selectedPlatform = recommendations.find((p: any) => selectedPlatformIds.includes(p.id)) || recommendations[0];
 
   const isStoryboardApproved = storyboard?.status === 'Approved';
   const isLocked = !isStoryboardApproved || !storyboard;
@@ -212,11 +217,11 @@ export function ScriptStage({ project, activeStage, onComplete }: Props) {
             <div className="space-y-3">
               <div className="flex justify-between items-center pb-3 border-b border-border/30">
                 <span className="text-muted-foreground text-sm">Platform</span>
-                <span className="font-medium">{platform?.platform}</span>
+                <span className="font-medium">{script?.platform || selectedPlatform?.platform || 'Unknown'}</span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-border/30">
                 <span className="text-muted-foreground text-sm">Format</span>
-                <span className="font-medium">{platform?.recommendedFormat}</span>
+                <span className="font-medium">{script?.format || selectedPlatform?.recommendedFormat || 'Unknown'}</span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-border/30">
                 <span className="text-muted-foreground text-sm">Storyboard Scenes</span>

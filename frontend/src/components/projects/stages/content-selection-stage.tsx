@@ -157,7 +157,7 @@ export function ContentSelectionStage({ project, activeStage, onComplete }: Prop
               id="btn-confirm-content-selection"
               onClick={handleConfirm}
               disabled={isApproving}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 h-10 px-5 whitespace-nowrap flex-shrink-0 rounded-full bg-primary text-primary-foreground font-medium hover:scale-[1.02] active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isApproving ? (
                 <>

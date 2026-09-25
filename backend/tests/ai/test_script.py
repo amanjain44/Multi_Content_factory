@@ -81,7 +81,7 @@ def _make_state(**overrides) -> AIState:
             "hookStrategy": "Open with relatable contrast",
             "callToAction": "Follow for weekly deep dives",
             "contentStructure": "Hook → Evidence → Solution → CTA",
-            "keyTalkingPoints": ["55% faster", "New skill stack", "Real tools"],
+            "keyTalkingPoints": ["Faster delivery", "New skill stack", "Real tools"],
             "platformAdaptations": [
                 {"platform": "LinkedIn", "format": "Short-form video", "notes": "Professional tone"}
             ],

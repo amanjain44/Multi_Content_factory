@@ -20,6 +20,8 @@ class ContentPlanOutput(BaseModel):
 
 class ContentOpportunity(BaseModel):
     id: str = Field(description="A unique identifier for this opportunity, e.g., an alphanumeric string")
+    content_type: ContentTypeEnum = Field(description="The canonical content type (e.g. Carousel, Video, Article, Newsletter, Social Post, Image)")
+    platform: str = Field(description="The target platform (e.g. LinkedIn, YouTube, Twitter)")
     title: str = Field(description="The title of the content format")
     summary: str = Field(description="A short description of the content")
     whyInteresting: str = Field(description="Why this content is valuable or interesting to the audience")
@@ -108,26 +110,26 @@ class StoryboardOutput(BaseModel):
 
 
 class ScriptSection(BaseModel):
-    id: str = Field(description="A unique identifier for this section")
+    id: str = Field(default="", description="A unique identifier for this section")
     order: int = Field(description="The sequential order of the section")
     title: str = Field(description="The title of the script section (maps to storyboard scene title)")
     narration: str = Field(description="The full spoken narration or written copy for this section")
     visualNotes: str = Field(description="Visual direction, B-roll notes, or production guidance")
     onScreenText: str = Field(description="Any text overlays or captions that appear on screen")
-    estimatedDuration: str = Field(description="The estimated duration of this section (e.g. '8 seconds')")
+    estimatedDuration: str = Field(default="N/A", description="The estimated duration of this section (e.g. '8 seconds')")
 
 
 class ScriptModel(BaseModel):
-    id: str = Field(description="A unique identifier for this script")
-    projectId: str = Field(description="The project ID this script belongs to")
+    id: str = Field(default="", description="A unique identifier for this script")
+    projectId: str = Field(default="", description="The project ID this script belongs to")
     title: str = Field(description="The full title of the script")
     platform: str = Field(description="The target platform (e.g. 'LinkedIn', 'YouTube')")
     format: str = Field(description="The content format (e.g. 'Short-form video', 'Long-form post')")
     hook: str = Field(description="The opening hook — the very first words/sentences to grab attention")
     conclusion: str = Field(description="The closing statement that wraps the content")
     callToAction: str = Field(description="The final call to action (e.g. 'Follow for more', 'Comment below')")
-    estimatedDuration: str = Field(description="Total estimated duration or read time (e.g. '68 seconds')")
-    status: str = Field(description="The current status — always 'Draft' on generation")
+    estimatedDuration: str = Field(default="N/A", description="Total estimated duration or read time (e.g. '68 seconds')")
+    status: str = Field(default="Draft", description="The current status — always 'Draft' on generation")
     sections: List[ScriptSection] = Field(description="The ordered list of body sections, one per storyboard scene")
 
 

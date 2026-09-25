@@ -2,6 +2,7 @@ from typing import Any, Dict
 from ..schemas import AIState, TopicAngleOutput
 from ..providers.factory import AIProviderFactory
 from ..config import AIConfig
+from ..prompts import GLOBAL_RELEVANCE_REQUIREMENT
 
 def get_provider():
     from ...core.config import settings
@@ -27,6 +28,7 @@ async def analyze_context(state: AIState) -> Dict[str, Any]:
     platforms_str = ", ".join([p.get("platform", "Unknown") for p in selected_platforms])
     
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Analyze the workflow context to prepare for Topic & Angle generation.
     
     Source Material:
@@ -76,6 +78,7 @@ The angle MUST be compatible with {approved_type}. Do NOT recommend any other co
 """ if approved_type else ""
 
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Based on the following context, generate 3-4 distinct topic angles (e.g., Contrarian, Educational, Blueprint, Story-driven) for the content.
     
     Source Material:

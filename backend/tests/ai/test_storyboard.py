@@ -68,7 +68,7 @@ SAMPLE_STRATEGY = {
     "tone": "Authoritative, accessible",
     "format": "Multi-scene educational video",
     "hookStrategy": "Open with a bold claim backed by data",
-    "keyTalkingPoints": ["55% faster", "New skill stack", "Real tools"],
+    "keyTalkingPoints": ["Faster delivery", "New skill stack", "Real tools"],
     "callToAction": "Follow for more AI engineering content",
     "contentStructure": "Hook → Evidence → Solution → CTA",
     "platformAdaptations": [
@@ -212,8 +212,8 @@ async def test_generate_storyboard_success():
                 ),
                 StoryboardScene(
                     id="s-2", order=2, title="Evidence", purpose="Build credibility",
-                    narration="55% faster with Copilot.", visualDirection="Bar chart animation.",
-                    onScreenText="55% faster", transition="Slide",
+                    narration="Faster delivery with AI assistants.", visualDirection="Bar chart animation.",
+                    onScreenText="Faster delivery", transition="Slide",
                     estimatedDuration="10 seconds"
                 ),
             ]
@@ -445,6 +445,6 @@ async def test_context_propagation_to_generate_storyboard_node():
     assert "Software engineers aged 25-45" in prompt_text  # targetAudience
     assert "AI coding tools make you faster and better" in prompt_text  # coreMessage
     assert "Hook" in prompt_text or "CTA" in prompt_text  # contentStructure fragment
-    assert "55% faster" in prompt_text  # keyTalkingPoints fragment
+    assert "Faster delivery" in prompt_text  # keyTalkingPoints fragment
     assert "LinkedIn" in prompt_text  # platform
-    assert "55% faster" in prompt_text or "keyTalkingPoints" in prompt_text or "talking" in prompt_text.lower()
+    assert "Faster delivery" in prompt_text or "keyTalkingPoints" in prompt_text or "talking" in prompt_text.lower()

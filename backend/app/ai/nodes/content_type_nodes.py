@@ -1,6 +1,7 @@
 from ..schemas import AIState, ContentTypeOutput
 from ..providers.factory import AIProviderFactory
 from ..config import AIConfig
+from ..prompts import GLOBAL_RELEVANCE_REQUIREMENT
 
 def get_provider():
     from ...core.config import settings
@@ -16,6 +17,7 @@ async def recommend_type(state: AIState) -> AIState:
     provider = get_provider()
     
     prompt = f"""
+    {GLOBAL_RELEVANCE_REQUIREMENT}
     Analyze the following source text and recommend the most suitable primary content type, along with alternatives.
     
     Source Text:

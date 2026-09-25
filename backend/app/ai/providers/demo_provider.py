@@ -7,7 +7,56 @@ class DemoProvider(BaseAIProvider):
     def __init__(self):
         pass
 
+
     async def generate_structured(self, prompt: str, schema: Type[BaseModel]) -> Any:
+        import re
+        topic = "AI-Assisted Workflow"
+        source_match = re.search(r'Source Material:\s*([^\n]+)', prompt)
+        if source_match and source_match.group(1).strip():
+            extracted = source_match.group(1).strip()
+            if len(extracted) > 50:
+                if "Antigravity" in extracted:
+                    topic = "Antigravity Code Editor"
+                elif "JavaScript" in extracted:
+                    topic = "JavaScript Fundamentals"
+                else:
+                    topic = extracted[:30] + "..."
+            else:
+                topic = extracted
+        else:
+            title_match = re.search(r'Title:\s*([^\n]+)', prompt)
+            if title_match and title_match.group(1).strip():
+                topic = title_match.group(1).strip()[:100]
+            else:
+                obj_match = re.search(r'Objective:\s*([^\n]+)', prompt)
+                if obj_match and obj_match.group(1).strip():
+                    topic = obj_match.group(1).strip()[:100]
+
+        def recursively_replace_topic(obj, topic_str):
+            if isinstance(obj, dict):
+                return {k: recursively_replace_topic(v, topic_str) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [recursively_replace_topic(x, topic_str) for x in obj]
+            elif isinstance(obj, str):
+                s = obj
+                s = s.replace("The Developer's New Workflow", topic_str)
+                s = s.replace("AI coding assistants", topic_str)
+                s = s.replace("AI coding tools", topic_str)
+                s = s.replace("JavaScript Fundamentals", topic_str)
+                s = s.replace("From Typist to Architect", topic_str)
+                s = s.replace("JS Basics", topic_str)
+                s = s.replace("AI Developer Workflow", topic_str)
+                return s
+            return obj
+
+        result = await self._generate_structured_internal(prompt, schema)
+        if result:
+            dump = result.model_dump()
+            modified = recursively_replace_topic(dump, topic)
+            return schema(**modified)
+        return result
+
+    async def _generate_structured_internal(self, prompt: str, schema: Type[BaseModel]) -> Any:
         is_js = "javascript" in prompt.lower() or "mozilla" in prompt.lower()
         is_youtube = "youtube" in prompt.lower()
         is_twitter = "twitter" in prompt.lower()
@@ -40,21 +89,42 @@ class DemoProvider(BaseAIProvider):
             platform_format = "Article"
 
         if is_js:
-            if schema.__name__ == "ContentSelectionOutput":
+            if schema.__name__ == "ContentPlanOutput":
+                return schema(**{
+                    "summary": "Educational content plan for JS",
+                    "audience": "Developers",
+                    "key_points": ["JS is cool", "JS is fast"],
+                    "suggested_angles": ["JS Basics"]
+                })
+            elif schema.__name__ == "ContentTypeOutput":
+                return schema(**{
+                    "recommendation": {
+                        "recommendedType": approved_type if approved_type else "Carousel",
+                        "alternatives": ["Article", "Social Post"],
+                        "reasoning": "JS concepts are easily explained with visuals.",
+                        "sourceSignals": ["technical", "educational"]
+                    }
+                })
+            elif schema.__name__ == "ContentSelectionOutput":
+                gen_type = approved_type if approved_type else "Carousel"
                 return schema(**{
                     "opportunities": [{
-                        "id": "opt-js",
-                        "title": "JavaScript Fundamentals",
+                        "id": "opt-js-1",
+                        "content_type": gen_type,
+                        "platform": "LinkedIn",
+                        "title": f"JavaScript Fundamentals ({gen_type})",
                         "summary": "Overview of JS concepts",
                         "whyInteresting": "JS is popular.",
                         "keyPoints": ["JS is single threaded", "Event loop"],
                         "potentialAudience": "Developers",
                         "estimatedValue": "High"
                     }, {
-                        "id": "opt-js-yt",
-                        "title": "JavaScript Fundamentals YouTube Short",
+                        "id": "opt-js-2",
+                        "content_type": gen_type,
+                        "platform": "YouTube",
+                        "title": f"JS Basics - Visual Guide ({gen_type})",
                         "summary": "Quick visual overview of JS concepts",
-                        "whyInteresting": "Visual learners engage well on YouTube Shorts.",
+                        "whyInteresting": "Visual learners engage well.",
                         "keyPoints": ["Event loop animation"],
                         "potentialAudience": "Beginner Developers",
                         "estimatedValue": "High reach"
@@ -151,161 +221,51 @@ class DemoProvider(BaseAIProvider):
             })
             
         if schema.__name__ == "ContentSelectionOutput":
-            if approved_type == "Article":
-                mock_data = {
-                    "opportunities": [
-                        {
-                            "id": "opt-article-1",
-                            "title": "In-Depth Article: The Developer's New Workflow",
-                            "summary": "A comprehensive written article detailing how AI coding assistants are changing the daily workflow of software engineers.",
-                            "whyInteresting": "Articles perform exceptionally well for deep, technical educational content.",
-                            "keyPoints": [
-                                "AI coding tools help reduce repetitive boilerplate tasks",
-                                "The shift from 'writing code' to 'reviewing AI-generated code'"
-                            ],
-                            "potentialAudience": "Software engineers, tech leads",
-                            "estimatedValue": "High SEO value and long-tail discoverability"
-                        },
-                        {
-                            "id": "opt-article-2",
-                            "title": "Opinion Piece: From Typist to Architect",
-                            "summary": "A thought leadership article exploring the evolution of software engineering in the age of AI.",
-                            "whyInteresting": "Opinion pieces spark discussion and position the author as an industry leader.",
-                            "keyPoints": ["The changing role of the developer", "Why prompt engineering is crucial"],
-                            "potentialAudience": "Tech community and engineering managers",
-                            "estimatedValue": "High engagement and shares"
-                        }
-                    ]
-                }
-            elif approved_type == "Social Post":
-                mock_data = {
-                    "opportunities": [
-                        {
-                            "id": "opt-social-1",
-                            "title": "Short Social Post: Top 3 AI Coding Tips",
-                            "summary": "A quick, punchy social post sharing immediate actionable advice for developers using AI tools.",
-                            "whyInteresting": "Bite-sized content drives immediate engagement and is highly shareable.",
-                            "keyPoints": ["Be specific", "Provide context", "Iterate quickly"],
-                            "potentialAudience": "Developers scrolling on social media",
-                            "estimatedValue": "High virality potential"
-                        }
-                    ]
-                }
-            elif approved_type == "Image":
-                mock_data = {
-                    "opportunities": [
-                        {
-                            "id": "opt-image-1",
-                            "title": "Infographic: The Developer's New Workflow",
-                            "summary": "A highly visual infographic comparing the traditional coding workflow with the new AI-assisted workflow.",
-                            "whyInteresting": "Infographics are highly shareable on LinkedIn and Twitter and distill complex ideas into quick visuals.",
-                            "keyPoints": ["Side-by-side comparison", "Time saved metrics", "Code review emphasis"],
-                            "potentialAudience": "Tech community and engineering managers",
-                            "estimatedValue": "High shareability"
-                        },
-                        {
-                            "id": "opt-image-2",
-                            "title": "Single Image Quote: The Architect Mindset",
-                            "summary": "A clean, typography-focused image highlighting a powerful quote about developers becoming architects.",
-                            "whyInteresting": "Quote images perform exceptionally well for thought leadership.",
-                            "keyPoints": ["Strong quote", "Minimalist aesthetic", "Clear branding"],
-                            "potentialAudience": "Software engineers and founders",
-                            "estimatedValue": "High engagement"
-                        },
-                        {
-                            "id": "opt-image-3",
-                            "title": "Diagram: AI Prompting Architecture",
-                            "summary": "A technical architecture diagram showing how a good prompt interacts with an LLM for code generation.",
-                            "whyInteresting": "Developers love technical diagrams and frequently save them for reference.",
-                            "keyPoints": ["System architecture style", "Context window explanation", "Iterative feedback loop"],
-                            "potentialAudience": "Senior developers and AI enthusiasts",
-                            "estimatedValue": "High bookmark/save rate"
-                        }
-                    ]
-                }
-            elif approved_type == "Newsletter":
-                mock_data = {
-                    "opportunities": [
-                        {
-                            "id": "opt-news-1",
-                            "title": "Deep Dive Newsletter: The Evolution of Coding",
-                            "summary": "A comprehensive newsletter edition exploring how AI is fundamentally changing the way we build software.",
-                            "whyInteresting": "Newsletters allow for long-form, intimate connection with a dedicated audience.",
-                            "keyPoints": ["Historical context", "The shift to reviewing", "Actionable advice for the week"],
-                            "potentialAudience": "Subscribed developers and tech leaders",
-                            "estimatedValue": "High trust and authority building"
-                        }
-                    ]
-                }
-            elif approved_type == "Video":
-                mock_data = {
-                    "opportunities": [
-                        {
-                            "id": "opt-video-1",
-                            "title": "YouTube Video: From Typist to Architect",
-                            "summary": "An in-depth video essay exploring the evolution of software engineering in the age of AI.",
-                            "whyInteresting": "YouTube allows for deeper dives and screen recordings to demonstrate the actual workflow shift in real-time.",
-                            "keyPoints": ["Visual demonstration of AI assistants", "Code review vs writing code"],
-                            "potentialAudience": "Developers looking for tutorials",
-                            "estimatedValue": "High retention and long-tail discoverability"
-                        },
-                        {
-                            "id": "opt-video-2",
-                            "title": "TikTok/Reels: 3 AI Prompting Tips",
-                            "summary": "A rapid-fire short video showing 3 powerful prompt patterns for developers.",
-                            "whyInteresting": "Short-form video is highly engaging and drives massive reach.",
-                            "keyPoints": ["Be specific", "Provide context", "Iterate"],
-                            "potentialAudience": "Junior developers scrolling social media",
-                            "estimatedValue": "High virality potential"
-                        },
-                        {
-                            "id": "opt-video-3",
-                            "title": "Webinar: The New Developer Stack",
-                            "summary": "A long-form live or recorded presentation walking through an end-to-end AI assisted project build.",
-                            "whyInteresting": "High intent audience looking to adopt new tools.",
-                            "keyPoints": ["AI coding tools help reduce repetitive boilerplate tasks", "Practical examples: generating test suites and documentation"],
-                            "potentialAudience": "Tech leads, engineering managers",
-                            "estimatedValue": "High value lead generation"
-                        }
-                    ]
-                }
-            else:
-                mock_data = {
-                    "opportunities": [
-                        {
-                            "id": "opt-linkedin-carousel",
-                            "title": "LinkedIn Carousel: The Developer's New Workflow",
-                            "summary": "A multi-slide visual carousel detailing how AI coding assistants are changing the daily workflow of software engineers, moving them from writing boilerplate to reviewing architecture.",
-                            "whyInteresting": "Carousels perform exceptionally well on LinkedIn for educational content. The step-by-step format allows developers to easily digest the workflow shift.",
-                            "keyPoints": [
-                                "AI coding tools help reduce repetitive boilerplate tasks",
-                                "The shift from 'writing code' to 'reviewing AI-generated code'",
-                                "Practical examples: generating test suites and documentation",
-                                "The growing importance of prompt engineering and architectural thinking"
-                            ],
-                            "potentialAudience": "Software engineers, tech leads, and startup founders who use or evaluate developer tools",
-                            "estimatedValue": "High reach — strong educational value leading to shares and saves"
-                        },
-                        {
-                            "id": "opt-youtube-video",
-                            "title": "YouTube Video: From Typist to Architect",
-                            "summary": "An in-depth video essay exploring the evolution of software engineering in the age of AI.",
-                            "whyInteresting": "YouTube allows for deeper dives and screen recordings to demonstrate the actual workflow shift in real-time.",
-                            "keyPoints": ["Visual demonstration of AI assistants", "Code review vs writing code"],
-                            "potentialAudience": "Developers looking for tutorials",
-                            "estimatedValue": "High retention and long-tail discoverability"
-                        },
-                        {
-                            "id": "opt-twitter-thread",
-                            "title": "Twitter Thread: Top 5 Prompting Tips",
-                            "summary": "A concise thread sharing actionable tips for better AI prompting.",
-                            "whyInteresting": "Twitter is great for quick, actionable advice that developers can try immediately.",
-                            "keyPoints": ["Be specific", "Provide context", "Iterate"],
-                            "potentialAudience": "Tech community and indie hackers",
-                            "estimatedValue": "High engagement and virality potential"
-                        }
-                    ]
-                }
+            gen_type = approved_type if approved_type else "Carousel"
+            platform_1 = "LinkedIn" if gen_type in ["Carousel", "Article", "Social Post", "Image"] else "YouTube"
+            platform_2 = "Twitter" if gen_type in ["Social Post", "Image"] else "Instagram"
+            platform_3 = "Substack" if gen_type == "Newsletter" else "TikTok"
+            
+            mock_data = {
+                "opportunities": [
+                    {
+                        "id": f"opt-{gen_type.lower()}-1",
+                        "content_type": gen_type,
+                        "platform": platform_1,
+                        "title": f"{platform_1} {gen_type}: The Developer's New Workflow",
+                        "summary": f"A comprehensive {gen_type.lower()} detailing how AI coding assistants are changing the daily workflow of software engineers.",
+                        "whyInteresting": f"{gen_type}s perform exceptionally well for educational content.",
+                        "keyPoints": [
+                            "AI coding tools help reduce repetitive boilerplate tasks",
+                            "The shift from 'writing code' to 'reviewing AI-generated code'"
+                        ],
+                        "potentialAudience": "Software engineers, tech leads",
+                        "estimatedValue": "High reach and educational value"
+                    },
+                    {
+                        "id": f"opt-{gen_type.lower()}-2",
+                        "content_type": gen_type,
+                        "platform": platform_2,
+                        "title": f"{platform_2} {gen_type}: From Typist to Architect",
+                        "summary": f"A thought leadership {gen_type.lower()} exploring the evolution of software engineering in the age of AI.",
+                        "whyInteresting": "Opinion pieces spark discussion and position the author as an industry leader.",
+                        "keyPoints": ["The changing role of the developer", "Why prompt engineering is crucial"],
+                        "potentialAudience": "Tech community and engineering managers",
+                        "estimatedValue": "High engagement and shares"
+                    },
+                    {
+                        "id": f"opt-{gen_type.lower()}-3",
+                        "content_type": gen_type,
+                        "platform": platform_3,
+                        "title": f"{platform_3} {gen_type}: Top 3 AI Coding Tips",
+                        "summary": f"A quick, punchy {gen_type.lower()} sharing immediate actionable advice for developers using AI tools.",
+                        "whyInteresting": "Bite-sized content drives immediate engagement and is highly shareable.",
+                        "keyPoints": ["Be specific", "Provide context", "Iterate quickly"],
+                        "potentialAudience": "Developers scrolling on social media",
+                        "estimatedValue": "High virality potential"
+                    }
+                ]
+            }
             return schema(**mock_data)
             
         if schema.__name__ == "PlatformStrategyOutput":
@@ -582,4 +542,9 @@ class DemoProvider(BaseAIProvider):
         return schema()
 
     async def generate_text(self, prompt: str) -> str:
-        return "Automatically completed. The AI extracted context based on the input: an analysis of the workflow shift caused by AI coding assistants."
+        import re
+        topic = "the provided subject"
+        source_match = re.search(r'Source Material:\s*([^\n]+)', prompt)
+        if source_match and source_match.group(1).strip():
+            topic = source_match.group(1).strip()[:100]
+        return f"Automatically completed. The AI extracted context based on the input: {topic}."
