@@ -4,6 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Optional
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -17,11 +18,11 @@ class EmailService:
         """
         env = os.environ.get("ENV", "development").lower()
         
-        smtp_host = os.environ.get("SMTP_HOST")
-        smtp_port = int(os.environ.get("SMTP_PORT", 587))
-        smtp_user = os.environ.get("SMTP_USER")
-        smtp_password = os.environ.get("SMTP_PASSWORD")
-        smtp_from = os.environ.get("SMTP_FROM_EMAIL", smtp_user)
+        smtp_host = settings.SMTP_HOST
+        smtp_port = settings.SMTP_PORT if settings.SMTP_PORT else 587
+        smtp_user = settings.SMTP_USER
+        smtp_password = settings.SMTP_PASSWORD
+        smtp_from = settings.SMTP_FROM_EMAIL if settings.SMTP_FROM_EMAIL else smtp_user
         
         # If SMTP is configured, send the real email regardless of the environment
         if smtp_host and smtp_user and smtp_password:
@@ -49,7 +50,8 @@ class EmailService:
                 msg.attach(part1)
                 msg.attach(part2)
 
-                server = smtplib.SMTP(smtp_host, smtp_port)
+                print(f"Attempting to connect to {smtp_host}:{smtp_port}...")
+                server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
                 server.starttls()
                 server.login(smtp_user, smtp_password)
                 server.sendmail(smtp_from, email, msg.as_string())

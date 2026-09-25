@@ -31,6 +31,13 @@ class Settings(BaseSettings):
     AI_MODEL_NAME: str = "gpt-4o-mini"
     AI_TEMPERATURE: float = 0.7
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    # Email
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int | None = None
+    SMTP_USER: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_FROM_EMAIL: str | None = None
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 settings = Settings()
